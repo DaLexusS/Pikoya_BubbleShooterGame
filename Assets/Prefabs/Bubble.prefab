@@ -197,6 +197,7 @@ GameObject:
   - component: {fileID: 8907452799999299475}
   - component: {fileID: 6589584517431946546}
   - component: {fileID: 2026257410879904607}
+  - component: {fileID: 3338472200927354001}
   m_Layer: 0
   m_Name: Bubble
   m_TagString: Player
@@ -234,6 +235,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleView
   bubbleVisual: {fileID: 7085563235346416959}
+  strokeVisual: {fileID: 9104817454055755708}
+  redColor: {r: 0.8773585, g: 0.19450872, b: 0.21860942, a: 1}
+  blueColor: {r: 0.2405661, g: 0.24056602, b: 1, a: 1}
+  greenColor: {r: 0.1745283, g: 1, b: 0.17452835, a: 1}
+  yellowColor: {r: 0.99641305, g: 1, b: 0.4198113, a: 1}
 --- !u!58 &8907452799999299475
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -296,7 +302,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleFall
   minimumHorizontalSpeed: 0.7
   maximumHorizontalSpeed: 1.5
-  minimumUpwardSpeed: 1.2
-  maximumUpwardSpeed: 1.8
-  gravity: 8
+  minimumUpwardSpeed: 20
+  maximumUpwardSpeed: 20
+  gravity: 20
   maximumRotationSpeed: 180
+--- !u!114 &3338472200927354001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4162594718706628268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84888efc146a4ef785a82667f482e3da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BubbleAttachEffect
+  bubbleView: {fileID: 208848681907957065}
+  attachDuration: 0.25
+  attachElasticity: 0.12
+  attachScalePulse: 0.08
+  shockDelay: 0.03
+  shockRings: 3
+  shockRingDelay: 0.04
+  shockRingFalloff: 0.3
+  shockDuration: 0.25
+  shockDistance: 0.06
+  shockScalePulse: 0.06

@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class BubbleLevelEditorWindow : EditorWindow
 {
-    private const int ShotCount = 30;
+    private const int MinimumShotCount = 1;
+    private const int MaximumShotCount = 100;
     private const float CellSize = 30f;
     private const float CellGap = 3f;
     private const string PreviewName = "Level Preview";
@@ -24,6 +25,10 @@ public class BubbleLevelEditorWindow : EditorWindow
     private Vector2 scrollPosition;
     private BubbleColor paintColor = BubbleColor.Red;
     private bool livePreview = true;
+    private Color redDisplayColor = Color.red;
+    private Color blueDisplayColor = Color.blue;
+    private Color greenDisplayColor = Color.green;
+    private Color yellowDisplayColor = Color.yellow;
     private GameObject previewRoot;
     private int lastPaintedItem = -1;
 
@@ -64,6 +69,8 @@ public class BubbleLevelEditorWindow : EditorWindow
         EnsureSerializedObject();
         levelObject.Update();
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+        DrawBubbleColors();
+        EditorGUILayout.Space(12f);
         DrawPalette();
         DrawMap();
         DrawRowControls();
@@ -119,7 +126,47 @@ public class BubbleLevelEditorWindow : EditorWindow
         EditorGUILayout.Space(8f);
     }
 
+    private void DrawBubbleColors()
+    {
+        EditorGUILayout.LabelField("Bubble Colors", EditorStyles.boldLabel);
+
+        BubbleView prefab = FindBubblePrefab();
+
+        if (prefab == null)
+        {
+            EditorGUILayout.HelpBox("Assign a Bubble prefab to MapLoader to edit its colors.", MessageType.Info);
+            return;
+        }
+
+        SerializedObject bubbleObject = new SerializedObject(prefab);
+        bubbleObject.Update();
+        SerializedProperty redColor = bubbleObject.FindProperty("redColor");
+        SerializedProperty blueColor = bubbleObject.FindProperty("blueColor");
+        SerializedProperty greenColor = bubbleObject.FindProperty("greenColor");
+        SerializedProperty yellowColor = bubbleObject.FindProperty("yellowColor");
+
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(redColor);
+        EditorGUILayout.PropertyField(blueColor);
+        EditorGUILayout.PropertyField(greenColor);
+        EditorGUILayout.PropertyField(yellowColor);
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(prefab, "Change Bubble Colors");
+            bubbleObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(prefab);
+            PrefabUtility.SavePrefabAsset(prefab.gameObject);
+            RefreshPreview();
+        }
+
+        redDisplayColor = redColor.colorValue;
+        blueDisplayColor = blueColor.colorValue;
+        greenDisplayColor = greenColor.colorValue;
+        yellowDisplayColor = yellowColor.colorValue;
+    }
     private void DrawPalette()
+
     {
         EditorGUILayout.LabelField("Paint Color", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
@@ -236,16 +283,33 @@ public class BubbleLevelEditorWindow : EditorWindow
     private void DrawShotSequence()
     {
         SerializedProperty shots = levelObject.FindProperty("shotColors");
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField($"Shot Sequence   {shots.arraySize} shots", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Shot Sequence", EditorStyles.boldLabel);
 
-        if (shots.arraySize != ShotCount && GUILayout.Button("Set To 30", GUILayout.Width(80f)))
+        EditorGUI.BeginChangeCheck();
+        int requestedShotCount = EditorGUILayout.DelayedIntField("Shot Amount", shots.arraySize);
+
+        if (EditorGUI.EndChangeCheck())
         {
-            ResizeShots();
-            shots = levelObject.FindProperty("shotColors");
+            requestedShotCount = Mathf.Clamp(requestedShotCount, MinimumShotCount, MaximumShotCount);
+            bool canResize = true;
+
+            if (requestedShotCount < shots.arraySize)
+            {
+                canResize = EditorUtility.DisplayDialog(
+                    "Reduce Shot Amount",
+                    $"Remove the last {shots.arraySize - requestedShotCount} shot slots?",
+                    "Remove",
+                    "Cancel");
+            }
+
+            if (canResize && requestedShotCount != shots.arraySize)
+            {
+                ResizeShots(requestedShotCount);
+                shots = levelObject.FindProperty("shotColors");
+            }
         }
 
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.LabelField($"{shots.arraySize} designed shots", EditorStyles.miniLabel);
 
         int columns = 10;
 
@@ -322,9 +386,9 @@ public class BubbleLevelEditorWindow : EditorWindow
         SerializedProperty rows = levelObject.FindProperty("rows");
         SerializedProperty shots = levelObject.FindProperty("shotColors");
 
-        if (shots.arraySize != ShotCount)
+        if (shots.arraySize < MinimumShotCount || shots.arraySize > MaximumShotCount)
         {
-            warnings.Add($"The game expects {ShotCount} shots. This level has {shots.arraySize}.");
+            warnings.Add($"Shot amount must be between {MinimumShotCount} and {MaximumShotCount}.");
         }
 
         int emptyShots = 0;
@@ -515,14 +579,14 @@ public class BubbleLevelEditorWindow : EditorWindow
         SaveLevel();
     }
 
-    private void ResizeShots()
+    private void ResizeShots(int shotCount)
     {
         Undo.RecordObject(level, "Resize Shot Sequence");
         SerializedProperty shots = levelObject.FindProperty("shotColors");
         int oldSize = shots.arraySize;
-        shots.arraySize = ShotCount;
+        shots.arraySize = shotCount;
 
-        for (int index = oldSize; index < ShotCount; index++)
+        for (int index = oldSize; index < shotCount; index++)
         {
             shots.GetArrayElementAtIndex(index).enumValueIndex = (int)BubbleColor.Empty;
         }
@@ -723,6 +787,19 @@ public class BubbleLevelEditorWindow : EditorWindow
         }
     }
 
+    private static BubbleView FindBubblePrefab()
+    {
+        MapLoader mapLoader = FindMapLoader();
+
+        if (mapLoader == null)
+        {
+            return null;
+        }
+
+        SerializedObject mapObject = new SerializedObject(mapLoader);
+        return mapObject.FindProperty("bubblePrefab").objectReferenceValue as BubbleView;
+    }
+
     private static MapLoader FindMapLoader()
     {
         return Object.FindAnyObjectByType<MapLoader>(FindObjectsInactive.Include);
@@ -740,14 +817,14 @@ public class BubbleLevelEditorWindow : EditorWindow
         };
     }
 
-    private static Color GetDisplayColor(BubbleColor color)
+    private Color GetDisplayColor(BubbleColor color)
     {
         return color switch
         {
-            BubbleColor.Red => new Color(1f, 0.3f, 0.3f),
-            BubbleColor.Blue => new Color(0.3f, 0.55f, 1f),
-            BubbleColor.Green => new Color(0.3f, 0.85f, 0.4f),
-            BubbleColor.Yellow => new Color(1f, 0.85f, 0.25f),
+            BubbleColor.Red => redDisplayColor,
+            BubbleColor.Blue => blueDisplayColor,
+            BubbleColor.Green => greenDisplayColor,
+            BubbleColor.Yellow => yellowDisplayColor,
             _ => new Color(0.65f, 0.65f, 0.65f)
         };
     }

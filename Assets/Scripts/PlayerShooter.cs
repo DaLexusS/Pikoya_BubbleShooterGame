@@ -10,7 +10,6 @@ public class PlayerShooter : MonoBehaviour
     [SerializeField] private Transform nextBallPoint;
     [SerializeField] private Collider2D leftWall;
     [SerializeField] private Collider2D rightWall;
-    [SerializeField] private int startingShots = 30;
     [SerializeField] private float shotSpeed = 12f;
     [SerializeField] private float bubbleScale = 0.7f;
     [SerializeField] private float swapClickRadius = 0.35f;
@@ -32,7 +31,7 @@ public class PlayerShooter : MonoBehaviour
             return;
         }
 
-        RemainingShots = Mathf.Min(startingShots, board.Level.ShotColorCount);
+        RemainingShots = board.Level.ShotColorCount;
         currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0));
         nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1));
         nextColorIndex = 2;

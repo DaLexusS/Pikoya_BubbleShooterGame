@@ -5,10 +5,21 @@ public sealed class BubbleView : MonoBehaviour
     private static readonly int TextureColor = Shader.PropertyToID("_TextureColor");
 
     [SerializeField] private SpriteRenderer bubbleVisual;
+    [SerializeField] private SpriteRenderer strokeVisual;
+    [ColorUsage(false)]
+    [SerializeField] private Color redColor = Color.red;
+    [ColorUsage(false)]
+    [SerializeField] private Color blueColor = Color.blue;
+    [ColorUsage(false)]
+    [SerializeField] private Color greenColor = Color.green;
+    [ColorUsage(false)]
+    [SerializeField] private Color yellowColor = Color.yellow;
 
     private MaterialPropertyBlock propertyBlock;
 
     public BubbleColor BubbleColor { get; private set; }
+    public Transform BubbleVisualTransform => bubbleVisual.transform;
+    public Transform StrokeVisualTransform => strokeVisual.transform;
 
     public void SetColor(BubbleColor bubbleColor)
     {
@@ -19,14 +30,14 @@ public sealed class BubbleView : MonoBehaviour
         bubbleVisual.SetPropertyBlock(propertyBlock);
     }
 
-    private static Color GetDisplayColor(BubbleColor bubbleColor)
+    private Color GetDisplayColor(BubbleColor bubbleColor)
     {
         return bubbleColor switch
         {
-            BubbleColor.Red => Color.red,
-            BubbleColor.Blue => Color.blue,
-            BubbleColor.Green => Color.green,
-            BubbleColor.Yellow => Color.yellow,
+            BubbleColor.Red => redColor,
+            BubbleColor.Blue => blueColor,
+            BubbleColor.Green => greenColor,
+            BubbleColor.Yellow => yellowColor,
             _ => Color.white
         };
     }

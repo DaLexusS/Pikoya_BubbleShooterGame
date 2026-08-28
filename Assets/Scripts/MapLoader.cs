@@ -114,7 +114,7 @@ public sealed class MapLoader : MonoBehaviour
         bubble.transform.localScale = bubblePrefab.transform.localScale * bubbleScale;
         bubble.name = $"Bubble {cell.y + 1}-{cell.x + 1}";
         RegisterBubble(cell, bubble);
-        ResolveShot(cell);
+        ResolveShot(cell, impactPosition);
         return true;
     }
 
@@ -135,12 +135,13 @@ public sealed class MapLoader : MonoBehaviour
         colliderCells[bubbleCollider] = cell;
     }
 
-    private void ResolveShot(Vector2Int shotCell)
+    private void ResolveShot(Vector2Int shotCell, Vector2 impactPosition)
     {
         BubbleMatchResult result = BubbleMatchResolver.Resolve(this, shotCell, minimumMatchSize);
 
         if (result.MatchedCells.Count == 0)
         {
+            PlayAttachEffect(shotCell, impactPosition);
             return;
         }
 
@@ -162,10 +163,64 @@ public sealed class MapLoader : MonoBehaviour
             }
         }
 
+
         foreach (BubbleFall fallingBubble in fallingBubbles)
         {
             fallingBubble.Play();
         }
+    }
+
+    private void PlayAttachEffect(Vector2Int shotCell, Vector2 impactPosition)
+    {
+        if (!TryGetBubble(shotCell, out BubbleView attachedBubble))
+        {
+            return;
+        }
+
+        BubbleAttachEffect attachEffect = attachedBubble.GetComponent<BubbleAttachEffect>();
+
+        if (attachEffect == null)
+        {
+            return;
+        }
+
+        List<BubbleShockTarget> targets = FindShockTargets(shotCell, attachEffect.ShockRings);
+        attachEffect.Play(impactPosition, targets);
+    }
+
+    private List<BubbleShockTarget> FindShockTargets(Vector2Int originCell, int maximumRing)
+    {
+        List<BubbleShockTarget> targets = new List<BubbleShockTarget>();
+        Queue<Vector2Int> openCells = new Queue<Vector2Int>();
+        Dictionary<Vector2Int, int> rings = new Dictionary<Vector2Int, int>();
+        openCells.Enqueue(originCell);
+        rings[originCell] = 0;
+
+        while (openCells.Count > 0)
+        {
+            Vector2Int cell = openCells.Dequeue();
+            int currentRing = rings[cell];
+
+            if (currentRing >= maximumRing)
+            {
+                continue;
+            }
+
+            foreach (Vector2Int neighbourCell in GetNeighbours(cell))
+            {
+                if (rings.ContainsKey(neighbourCell) || !TryGetBubble(neighbourCell, out BubbleView neighbourBubble))
+                {
+                    continue;
+                }
+
+                int ring = currentRing + 1;
+                rings[neighbourCell] = ring;
+                targets.Add(new BubbleShockTarget(neighbourBubble, ring));
+                openCells.Enqueue(neighbourCell);
+            }
+        }
+
+        return targets;
     }
 
     private bool TryRemoveBubble(Vector2Int cell, out BubbleView bubble)
