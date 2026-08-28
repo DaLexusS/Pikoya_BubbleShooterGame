@@ -10056,15 +10056,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleAttachEffect
   bubbleView: {fileID: 208848681907957065}
   attachDuration: 0.25
-  attachElasticity: 0.12
+  attachElasticity: 0.5
   attachScalePulse: 0.08
   shockDelay: 0.03
-  shockRings: 3
-  shockRingDelay: 0.04
+  shockRings: 2
+  shockRingDelay: 0.05
   shockRingFalloff: 0.3
   shockDuration: 0.25
-  shockDistance: 0.06
-  shockScalePulse: 0.06
+  shockDistance: 0.03
+  shockScalePulse: 0.3
 --- !u!114 &3338472200927354002
 MonoBehaviour:
   m_ObjectHideFlags: 0
