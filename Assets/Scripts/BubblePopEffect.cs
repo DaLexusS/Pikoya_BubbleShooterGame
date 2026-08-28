@@ -70,7 +70,12 @@ public class BubblePopEffect : MonoBehaviour
         foreach (ParticleSystem particle in popParticles)
         {
             ParticleSystem.MainModule main = particle.main;
-            main.startColor = color;
+
+            if (particle.name != "Second")
+            {
+                main.startColor = color;
+            }
+
             float particleLifetime = (main.duration + main.startLifetime.constantMax) / main.simulationSpeed;
             lifetime = Mathf.Max(lifetime, particleLifetime);
             particle.Play();

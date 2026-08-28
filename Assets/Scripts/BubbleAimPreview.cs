@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class BubbleAimPreview : MonoBehaviour
 {
+    private static readonly int BeamColor = Shader.PropertyToID("_BeamColor");
+
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private int maximumWallReflections = 2;
     [SerializeField] private float maximumDistance = 20f;
+
+    private MaterialPropertyBlock propertyBlock;
 
     private void Awake()
     {
@@ -18,7 +22,8 @@ public class BubbleAimPreview : MonoBehaviour
         MapLoader board,
         Collider2D leftWall,
         Collider2D rightWall,
-        Collider2D ignoredCollider)
+        Collider2D ignoredCollider,
+        Color color)
     {
         Vector3[] points = new Vector3[maximumWallReflections + 2];
         int pointCount = 1;
@@ -64,6 +69,10 @@ public class BubbleAimPreview : MonoBehaviour
             lineRenderer.SetPosition(index, points[index]);
         }
 
+        propertyBlock ??= new MaterialPropertyBlock();
+        lineRenderer.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetColor(BeamColor, color);
+        lineRenderer.SetPropertyBlock(propertyBlock);
         lineRenderer.enabled = true;
     }
 

@@ -241,7 +241,8 @@ public class PlayerShooter : MonoBehaviour
             board,
             leftWall,
             rightWall,
-            ignoredCollider);
+            ignoredCollider,
+            currentBubble.DisplayColor);
     }
 
     private void OnDrawGizmos()
