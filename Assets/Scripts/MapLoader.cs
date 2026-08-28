@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public sealed class MapLoader : MonoBehaviour
 {
@@ -20,6 +22,8 @@ public sealed class MapLoader : MonoBehaviour
     [SerializeField] private float bubbleScale = 0.7f;
     [SerializeField] private int maximumRows = 16;
     [SerializeField] private int minimumMatchSize = 3;
+    [SerializeField] private float fallCollectionY = -4.5f;
+    [SerializeField] private UnityEvent onFallingBubbleCollected = new UnityEvent();
 
     private readonly Dictionary<Vector2Int, BubbleView> bubbles = new();
     private readonly Dictionary<Collider2D, Vector2Int> colliderCells = new();
@@ -27,6 +31,7 @@ public sealed class MapLoader : MonoBehaviour
 
     public LevelData Level => level;
     public float TopY => transform.position.y;
+    public bool IsEmpty => bubbles.Count == 0;
 
     public void Initialize()
     {
@@ -84,6 +89,19 @@ public sealed class MapLoader : MonoBehaviour
     public List<Vector2Int> GetOccupiedCells()
     {
         return new List<Vector2Int>(bubbles.Keys);
+    }
+
+    public bool HasBubbleAtOrBelow(float worldY)
+    {
+        foreach (BubbleView bubble in bubbles.Values)
+        {
+            if (bubble.transform.position.y <= worldY)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public IEnumerable<Vector2Int> GetNeighbours(Vector2Int cell)
@@ -145,29 +163,125 @@ public sealed class MapLoader : MonoBehaviour
             return;
         }
 
+        List<BubbleView> poppingBubbles = new List<BubbleView>();
+
         foreach (Vector2Int cell in result.MatchedCells)
         {
             if (TryRemoveBubble(cell, out BubbleView bubble))
             {
-                Destroy(bubble.gameObject);
+                poppingBubbles.Add(bubble);
             }
         }
 
-        List<BubbleFall> fallingBubbles = new List<BubbleFall>();
+        List<List<BubbleFall>> fallingGroups = CreateFallingGroups(result);
 
-        foreach (Vector2Int cell in result.DetachedCells)
+        StartCoroutine(PlayPopSequence(poppingBubbles, fallingGroups));
+    }
+
+    private IEnumerator PlayPopSequence(List<BubbleView> poppingBubbles, List<List<BubbleFall>> fallingGroups)
+    {
+        for (int index = 0; index < poppingBubbles.Count; index++)
         {
-            if (TryRemoveBubble(cell, out BubbleView bubble))
+            BubbleView bubble = poppingBubbles[index];
+            BubblePopEffect popEffect = bubble.GetComponent<BubblePopEffect>();
+            float delay = popEffect == null ? 0f : popEffect.DelayAfterPop;
+            StartCoroutine(PlayBubblePop(bubble, popEffect, fallingGroups[index]));
+
+            if (delay > 0f)
             {
-                fallingBubbles.Add(bubble.GetComponent<BubbleFall>());
+                yield return new WaitForSeconds(delay);
             }
         }
+    }
 
+    private IEnumerator PlayBubblePop(
+        BubbleView bubble,
+        BubblePopEffect popEffect,
+        List<BubbleFall> fallingBubbles)
+    {
+        if (popEffect != null)
+        {
+            yield return popEffect.Play();
+        }
+
+        Destroy(bubble.gameObject);
 
         foreach (BubbleFall fallingBubble in fallingBubbles)
         {
-            fallingBubble.Play();
+            fallingBubble.Play(fallCollectionY, HandleFallingBubbleCollected);
         }
+    }
+
+    private void HandleFallingBubbleCollected()
+    {
+        onFallingBubbleCollected.Invoke();
+    }
+
+    private List<List<BubbleFall>> CreateFallingGroups(BubbleMatchResult result)
+    {
+        List<List<BubbleFall>> fallingGroups = new List<List<BubbleFall>>();
+
+        for (int index = 0; index < result.MatchedCells.Count; index++)
+        {
+            fallingGroups.Add(new List<BubbleFall>());
+        }
+
+        Dictionary<Vector2Int, int> matchedOrder = new Dictionary<Vector2Int, int>();
+
+        for (int index = 0; index < result.MatchedCells.Count; index++)
+        {
+            matchedOrder[result.MatchedCells[index]] = index;
+        }
+
+        HashSet<Vector2Int> detachedCells = new HashSet<Vector2Int>(result.DetachedCells);
+        HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();
+
+        foreach (Vector2Int startCell in result.DetachedCells)
+        {
+            if (!visitedCells.Add(startCell))
+            {
+                continue;
+            }
+
+            Queue<Vector2Int> openCells = new Queue<Vector2Int>();
+            List<Vector2Int> componentCells = new List<Vector2Int>();
+            int releaseIndex = 0;
+            openCells.Enqueue(startCell);
+
+            while (openCells.Count > 0)
+            {
+                Vector2Int cell = openCells.Dequeue();
+                componentCells.Add(cell);
+
+                foreach (Vector2Int neighbour in GetNeighbours(cell))
+                {
+                    if (detachedCells.Contains(neighbour))
+                    {
+                        if (visitedCells.Add(neighbour))
+                        {
+                            openCells.Enqueue(neighbour);
+                        }
+
+                        continue;
+                    }
+
+                    if (matchedOrder.TryGetValue(neighbour, out int matchedIndex))
+                    {
+                        releaseIndex = Mathf.Max(releaseIndex, matchedIndex);
+                    }
+                }
+            }
+
+            foreach (Vector2Int cell in componentCells)
+            {
+                if (TryRemoveBubble(cell, out BubbleView bubble))
+                {
+                    fallingGroups[releaseIndex].Add(bubble.GetComponent<BubbleFall>());
+                }
+            }
+        }
+
+        return fallingGroups;
     }
 
     private void PlayAttachEffect(Vector2Int shotCell, Vector2 impactPosition)
@@ -236,6 +350,7 @@ public sealed class MapLoader : MonoBehaviour
         if (bubbleCollider != null)
         {
             colliderCells.Remove(bubbleCollider);
+            bubbleCollider.enabled = false;
         }
 
         return true;

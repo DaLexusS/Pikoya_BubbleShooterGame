@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,23 +7,32 @@ public class PlayerShooter : MonoBehaviour
     [SerializeField] private Camera gameplayCamera;
     [SerializeField] private MapLoader board;
     [SerializeField] private BubbleView bubblePrefab;
+    [SerializeField] private BubbleSwapEffect swapEffect;
+    [SerializeField] private BubbleAimPreview aimPreviewPrefab;
     [SerializeField] private Transform currentBallPoint;
     [SerializeField] private Transform nextBallPoint;
     [SerializeField] private Collider2D leftWall;
     [SerializeField] private Collider2D rightWall;
     [SerializeField] private float shotSpeed = 12f;
     [SerializeField] private float bubbleScale = 0.7f;
+    [SerializeField] private float nextBubbleScale = 0.85f;
+    [SerializeField] private float nextBallMoveDelay = 0.15f;
     [SerializeField] private float swapClickRadius = 0.35f;
 
     private BubbleView currentBubble;
     private BubbleView nextBubble;
+    private BubbleAimPreview aimPreview;
     private Vector2 aimDirection = Vector2.up;
     private int nextColorIndex;
     private bool isAiming;
     private bool isShotActive;
+    private bool isProjectileFinished;
+    private bool isReloadFinished;
+    private bool isSwapping;
     private bool isInitialized;
 
     public int RemainingShots { get; private set; }
+    public bool IsShotActive => isShotActive;
 
     public void Initialize()
     {
@@ -32,15 +42,16 @@ public class PlayerShooter : MonoBehaviour
         }
 
         RemainingShots = board.Level.ShotColorCount;
-        currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0));
-        nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1));
+        currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0), 1f);
+        nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1), nextBubbleScale);
+        aimPreview = Instantiate(aimPreviewPrefab);
         nextColorIndex = 2;
         isInitialized = true;
     }
 
     private void Update()
     {
-        if (!isInitialized || isShotActive || currentBubble == null || Pointer.current == null)
+        if (!isInitialized || isShotActive || isSwapping || currentBubble == null || Pointer.current == null)
         {
             return;
         }
@@ -85,10 +96,12 @@ public class PlayerShooter : MonoBehaviour
 
         if (newDirection.y <= 0.05f)
         {
+            aimPreview.Hide();
             return false;
         }
 
         aimDirection = newDirection.normalized;
+        ShowAimPreview();
         return true;
     }
 
@@ -100,9 +113,26 @@ public class PlayerShooter : MonoBehaviour
 
     private void SwapBalls()
     {
+        aimPreview.Hide();
+        BubbleView previousCurrent = currentBubble;
+        BubbleView previousNext = nextBubble;
         (currentBubble, nextBubble) = (nextBubble, currentBubble);
-        MoveBubbleToPoint(currentBubble, currentBallPoint);
-        MoveBubbleToPoint(nextBubble, nextBallPoint);
+        isSwapping = true;
+        swapEffect.Play(
+            previousCurrent,
+            nextBallPoint,
+            GetBubbleScale(nextBubbleScale),
+            previousNext,
+            currentBallPoint,
+            GetBubbleScale(1f),
+            HandleSwapFinished);
+    }
+
+    private void HandleSwapFinished()
+    {
+        currentBubble.name = "Current Ball";
+        nextBubble.name = "Next Ball";
+        isSwapping = false;
     }
 
     private void Shoot()
@@ -112,11 +142,14 @@ public class PlayerShooter : MonoBehaviour
             return;
         }
 
+        aimPreview.Hide();
         BubbleView firedBubble = currentBubble;
         currentBubble = null;
         RemainingShots--;
         isShotActive = true;
         firedBubble.transform.SetParent(null, true);
+        isProjectileFinished = false;
+        isReloadFinished = false;
         firedBubble.GetComponent<BubbleShot>().Launch(
             aimDirection,
             shotSpeed,
@@ -124,28 +157,59 @@ public class PlayerShooter : MonoBehaviour
             leftWall,
             rightWall,
             HandleShotFinished);
+        StartCoroutine(PrepareNextShot());
     }
 
     private void HandleShotFinished()
     {
-        isShotActive = false;
+        isProjectileFinished = true;
+        TryFinishShot();
+    }
+
+    private IEnumerator PrepareNextShot()
+    {
+        yield return new WaitForSeconds(nextBallMoveDelay);
+
         currentBubble = nextBubble;
         nextBubble = null;
 
         if (currentBubble != null)
         {
-            MoveBubbleToPoint(currentBubble, currentBallPoint);
+            bool movementFinished = false;
+            swapEffect.PlayPromotion(
+                currentBubble,
+                currentBallPoint,
+                GetBubbleScale(1f),
+                () => movementFinished = true);
+
+            while (!movementFinished)
+            {
+                yield return null;
+            }
+
+            currentBubble.name = "Current Ball";
         }
 
         if (RemainingShots > 1)
         {
             BubbleColor nextColor = board.Level.GetShotColor(nextColorIndex);
             nextColorIndex++;
-            nextBubble = CreateBubble(nextBallPoint, nextColor);
+            nextBubble = CreateBubble(nextBallPoint, nextColor, nextBubbleScale);
+        }
+
+        isReloadFinished = true;
+        TryFinishShot();
+    }
+
+    private void TryFinishShot()
+    {
+        if (isProjectileFinished && isReloadFinished)
+        {
+            isShotActive = false;
         }
     }
 
-    private BubbleView CreateBubble(Transform parentPoint, BubbleColor bubbleColor)
+    private BubbleView CreateBubble(Transform parentPoint, BubbleColor bubbleColor, float scaleMultiplier)
     {
         if (bubbleColor == BubbleColor.Empty)
         {
@@ -156,17 +220,28 @@ public class PlayerShooter : MonoBehaviour
         bubble.name = parentPoint == currentBallPoint ? "Current Ball" : "Next Ball";
         bubble.transform.localPosition = Vector3.zero;
         bubble.transform.localRotation = Quaternion.identity;
-        bubble.transform.localScale *= bubbleScale;
+        bubble.transform.localScale = GetBubbleScale(scaleMultiplier);
         bubble.SetColor(bubbleColor);
         return bubble;
     }
 
-    private static void MoveBubbleToPoint(BubbleView bubble, Transform point)
+
+    private Vector3 GetBubbleScale(float scaleMultiplier)
     {
-        bubble.transform.SetParent(point);
-        bubble.transform.localPosition = Vector3.zero;
-        bubble.transform.localRotation = Quaternion.identity;
-        bubble.name = point.name == "CurrentBallPoint" ? "Current Ball" : "Next Ball";
+        return bubblePrefab.transform.localScale * (bubbleScale * scaleMultiplier);
+    }
+
+    private void ShowAimPreview()
+    {
+        Collider2D ignoredCollider = currentBubble.GetComponent<Collider2D>();
+        aimPreview.Show(
+            currentBallPoint.position,
+            aimDirection,
+            GetBubbleRadius(),
+            board,
+            leftWall,
+            rightWall,
+            ignoredCollider);
     }
 
     private void OnDrawGizmos()

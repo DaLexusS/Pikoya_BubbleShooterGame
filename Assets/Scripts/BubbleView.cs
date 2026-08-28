@@ -21,6 +21,7 @@ public sealed class BubbleView : MonoBehaviour
     public Transform BubbleVisualTransform => bubbleVisual.transform;
     public Transform StrokeVisualTransform => strokeVisual.transform;
 
+    public Color DisplayColor => GetDisplayColor(BubbleColor);
     public void SetColor(BubbleColor bubbleColor)
     {
         BubbleColor = bubbleColor;

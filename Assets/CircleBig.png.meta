@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: dd68a4939f9a0a94dbc6fb7ec4dbf36f
+guid: 26fc9a1d557ff924cad19ba3a9260190
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2979008113179386914
-    second: polygonal-metal-background_1100-297_0
+      213: -6438384669975519343
+    second: CircleBig_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,9 +40,9 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: polygonal-metal-background_1100-297_0
+      name: CircleBig_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 626
-        height: 626
+        x: 17
+        y: 18
+        width: 477
+        height: 477
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 22460117810975920800000000000000
-      internalID: 2979008113179386914
+      spriteID: 19fd9c2314346a6a0800000000000000
+      internalID: -6438384669975519343
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      polygonal-metal-background_1100-297_0: 2979008113179386914
+      CircleBig_0: -6438384669975519343
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

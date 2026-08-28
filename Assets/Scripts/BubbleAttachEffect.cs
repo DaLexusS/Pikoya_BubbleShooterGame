@@ -54,6 +54,17 @@ public class BubbleAttachEffect : MonoBehaviour
 
     public int ShockRings => shockRings;
 
+    public void Stop()
+    {
+        if (activeAnimation != null)
+        {
+            StopCoroutine(activeAnimation);
+            activeAnimation = null;
+        }
+
+        ResetVisual();
+    }
+
     public void Play(Vector2 impactPosition, IReadOnlyList<BubbleShockTarget> targets)
     {
         PlayAttach(impactPosition);

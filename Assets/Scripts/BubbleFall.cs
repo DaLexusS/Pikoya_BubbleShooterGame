@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class BubbleFall : MonoBehaviour
@@ -12,10 +13,16 @@ public class BubbleFall : MonoBehaviour
     private Vector2 velocity;
     private float rotationSpeed;
     private float destroyY;
+    private float collectionY;
+    private System.Action collected;
+    private bool hasCollected;
 
-    public void Play()
+    public void Play(float targetY, System.Action onCollected)
     {
         float horizontalDirection = Random.value < 0.5f ? -1f : 1f;
+        collectionY = targetY;
+        collected = onCollected;
+        hasCollected = false;
         float horizontalSpeed = Random.Range(minimumHorizontalSpeed, maximumHorizontalSpeed);
         velocity = new Vector2(
             horizontalDirection * horizontalSpeed,
@@ -42,9 +49,44 @@ public class BubbleFall : MonoBehaviour
         transform.position += (Vector3)(velocity * Time.deltaTime);
         transform.Rotate(0f, 0f, rotationSpeed * Time.deltaTime);
 
+        if (transform.position.y <= collectionY)
+        {
+            Collect();
+            return;
+        }
+
         if (transform.position.y < destroyY)
         {
             Destroy(gameObject);
         }
+    }
+
+    private void Collect()
+    {
+        if (hasCollected)
+        {
+            return;
+        }
+
+        hasCollected = true;
+        enabled = false;
+        System.Action callback = collected;
+        collected = null;
+        callback?.Invoke();
+        BubblePopEffect popEffect = GetComponent<BubblePopEffect>();
+
+        if (popEffect == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        StartCoroutine(PlayCollectionEffect(popEffect));
+    }
+
+    private IEnumerator PlayCollectionEffect(BubblePopEffect popEffect)
+    {
+        yield return popEffect.Play();
+        Destroy(gameObject);
     }
 }
