@@ -5,9 +5,11 @@ public sealed class LevelData : ScriptableObject
 {
     [SerializeField] private int columns = 11;
     [SerializeField] private LevelRow[] rows = new LevelRow[8];
+    [SerializeField] private BubbleColor[] shotColors = new BubbleColor[30];
 
     public int Columns => columns;
     public int RowCount => rows.Length;
+    public int ShotColorCount => shotColors.Length;
 
     public BubbleColor GetCell(int row, int column)
     {
@@ -17,5 +19,15 @@ public sealed class LevelData : ScriptableObject
         }
 
         return rows[row].GetCell(column);
+    }
+
+    public BubbleColor GetShotColor(int index)
+    {
+        if (index < 0 || index >= shotColors.Length)
+        {
+            return BubbleColor.Empty;
+        }
+
+        return shotColors[index];
     }
 }
