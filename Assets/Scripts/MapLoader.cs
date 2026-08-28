@@ -23,12 +23,19 @@ public sealed class MapLoader : MonoBehaviour
 
     private readonly Dictionary<Vector2Int, BubbleView> bubbles = new();
     private readonly Dictionary<Collider2D, Vector2Int> colliderCells = new();
+    private bool isInitialized;
 
     public LevelData Level => level;
     public float TopY => transform.position.y;
 
-    private void Awake()
+    public void Initialize()
     {
+        if (isInitialized)
+        {
+            return;
+        }
+
+        isInitialized = true;
         LoadLevel();
     }
 

@@ -21,20 +21,27 @@ public class PlayerShooter : MonoBehaviour
     private int nextColorIndex;
     private bool isAiming;
     private bool isShotActive;
+    private bool isInitialized;
 
     public int RemainingShots { get; private set; }
 
-    private void Start()
+    public void Initialize()
     {
+        if (isInitialized)
+        {
+            return;
+        }
+
         RemainingShots = Mathf.Min(startingShots, board.Level.ShotColorCount);
         currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0));
         nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1));
         nextColorIndex = 2;
+        isInitialized = true;
     }
 
     private void Update()
     {
-        if (isShotActive || currentBubble == null || Pointer.current == null)
+        if (!isInitialized || isShotActive || currentBubble == null || Pointer.current == null)
         {
             return;
         }
