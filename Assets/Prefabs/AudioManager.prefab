@@ -80,6 +80,7 @@ MonoBehaviour:
   sfxEndBubblesPop: {fileID: 8300000, guid: 7df89b59fcf30184aa97aec5080686d8, type: 3}
   sfxFireworks: {fileID: 8300000, guid: 9086abaa11efdcc49a779c0c55fcca94, type: 3}
   sfxUiHover: {fileID: 8300000, guid: 84d4d191380c83744a53b1c8a6f0aed7, type: 3}
+  sfxExcellentAppear: {fileID: 8300000, guid: cc5f470da44ac6541b29ff62c9f6fd5a, type: 3}
 --- !u!82 &8755837444483142110
 AudioSource:
   m_ObjectHideFlags: 0

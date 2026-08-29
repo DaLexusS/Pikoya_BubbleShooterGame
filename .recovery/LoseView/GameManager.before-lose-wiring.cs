@@ -16,7 +16,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BoardBubbleCountView boardBubbleCountView;
     [SerializeField] private PreGameView preGameView;
     [SerializeField] private VictoryView victoryView;
-    [SerializeField] private LoseView loseView;
     [SerializeField] private ExcellentView excellentView;
     [SerializeField] private SlideMessageView lastShotsLeftView;
     [SerializeField] private float preGameDelay = 0.5f;
@@ -63,8 +62,6 @@ public class GameManager : MonoBehaviour
         playerBubbleCountView.Initialize(playerShooter);
         scoreManager.Initialize(mapLoader.Level);
         victoryView?.Initialize();
-        loseView ??= LoseView.FindInScene();
-        loseView?.Initialize();
         excellentView ??= ExcellentView.FindInScene();
         excellentView?.Initialize();
 
@@ -72,12 +69,6 @@ public class GameManager : MonoBehaviour
         {
             victoryView.ExitRequested += ExitToMenu;
             victoryView.NextRequested += GoToNextLevel;
-        }
-
-        if (loseView != null)
-        {
-            loseView.RetryRequested += RetryLevel;
-            loseView.ExitRequested += ExitToMenu;
         }
 
         playerShooter.DisableShooting();
@@ -122,10 +113,7 @@ public class GameManager : MonoBehaviour
         if (playerShooter.RemainingShots <= 0 || mapLoader.HasBubbleAtOrBelow(loseLineY))
         {
             isGameFinished = true;
-            playerShooter.DisableShooting();
             AudioManager.Instance?.FadeOutBackgroundMusic();
-            AudioManager.Instance?.PlaySfx(0.1f, SFX.Lose, 1f);
-            loseView?.Play();
             onLost.Invoke();
         }
     }
@@ -184,12 +172,6 @@ public class GameManager : MonoBehaviour
         SceneTransitionManager.LoadScene("Menu");
     }
 
-    private static void RetryLevel()
-    {
-        Time.timeScale = 1f;
-        SceneTransitionManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
     private static void GoToNextLevel()
     {
         Time.timeScale = 1f;
@@ -228,12 +210,6 @@ public class GameManager : MonoBehaviour
         if (playerShooter != null)
         {
             playerShooter.RemainingShotsChanged -= HandleRemainingShotsChanged;
-        }
-
-        if (loseView != null)
-        {
-            loseView.RetryRequested -= RetryLevel;
-            loseView.ExitRequested -= ExitToMenu;
         }
 
         if (victoryView != null)

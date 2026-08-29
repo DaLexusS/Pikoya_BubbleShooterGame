@@ -191,7 +191,6 @@ public sealed class SceneTransitionManager : MonoBehaviour
         Time.timeScale = previousTimeScale;
         isTransitioning = false;
         IsSceneReady = true;
-        AudioManager.Instance?.RestoreBackgroundMusic();
         SceneReady?.Invoke();
     }
 

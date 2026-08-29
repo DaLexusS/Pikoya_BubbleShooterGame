@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -20,7 +19,6 @@ public enum SFX
     Fireworks,
     UiHover,
     ExcellentAppear,
-    Lose,
 }
 
 [RequireComponent(typeof(AudioPool))]
@@ -36,7 +34,6 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioMixerGroup musicMixer;
     [SerializeField] private AudioClip gameMusic;
     [SerializeField, Range(0f, 1f)] private float musicVolume = 0.15f;
-    [SerializeField, Min(0f)] private float musicFadeOutDuration = 0.5f;
     [SerializeField] private AudioSource musicSource;
 
     [Header("Sounds")]
@@ -56,10 +53,6 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip sfxFireworks;
     [SerializeField] private AudioClip sfxUiHover;
     [SerializeField] private AudioClip sfxExcellentAppear;
-    [SerializeField] private AudioClip sfxLose;
-
-    private Coroutine musicFadeRoutine;
-
     public void Init()
     {
         if (Instance != null && Instance != this)
@@ -111,53 +104,6 @@ public class AudioManager : MonoBehaviour
         {
             musicSource.Play();
         }
-    }
-
-    public void FadeOutBackgroundMusic()
-    {
-        if (musicSource == null || !musicSource.isPlaying)
-        {
-            return;
-        }
-
-        if (musicFadeRoutine != null)
-        {
-            StopCoroutine(musicFadeRoutine);
-        }
-
-        musicFadeRoutine = StartCoroutine(FadeOutMusicRoutine());
-    }
-
-    public void RestoreBackgroundMusic()
-    {
-        if (musicFadeRoutine != null)
-        {
-            StopCoroutine(musicFadeRoutine);
-            musicFadeRoutine = null;
-        }
-
-        StartBackgroundMusic();
-    }
-
-    private IEnumerator FadeOutMusicRoutine()
-    {
-        float startVolume = musicSource.volume;
-        float duration = Mathf.Max(0f, musicFadeOutDuration);
-
-        if (duration > 0f)
-        {
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                musicSource.volume = Mathf.Lerp(startVolume, 0f, Mathf.Clamp01(elapsed / duration));
-                yield return null;
-            }
-        }
-
-        musicSource.volume = 0f;
-        musicSource.Stop();
-        musicFadeRoutine = null;
     }
 
     private void PlaySfx(float volume, AudioClip audio, bool hasRandomPitch, float randomPitchMin, float randomPitchMax)
@@ -231,9 +177,6 @@ public class AudioManager : MonoBehaviour
                 break;
             case SFX.ExcellentAppear:
                 PlaySfx(volume, sfxExcellentAppear, hasRandomPitch, randomPitchMin, randomPitchMax);
-                break;
-            case SFX.Lose:
-                PlaySfx(volume, sfxLose, hasRandomPitch, randomPitchMin, randomPitchMax);
                 break;
         }
     }

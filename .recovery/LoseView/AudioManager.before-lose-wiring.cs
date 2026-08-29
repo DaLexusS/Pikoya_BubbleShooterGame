@@ -20,7 +20,6 @@ public enum SFX
     Fireworks,
     UiHover,
     ExcellentAppear,
-    Lose,
 }
 
 [RequireComponent(typeof(AudioPool))]
@@ -56,7 +55,6 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip sfxFireworks;
     [SerializeField] private AudioClip sfxUiHover;
     [SerializeField] private AudioClip sfxExcellentAppear;
-    [SerializeField] private AudioClip sfxLose;
 
     private Coroutine musicFadeRoutine;
 
@@ -231,9 +229,6 @@ public class AudioManager : MonoBehaviour
                 break;
             case SFX.ExcellentAppear:
                 PlaySfx(volume, sfxExcellentAppear, hasRandomPitch, randomPitchMin, randomPitchMax);
-                break;
-            case SFX.Lose:
-                PlaySfx(volume, sfxLose, hasRandomPitch, randomPitchMin, randomPitchMax);
                 break;
         }
     }
