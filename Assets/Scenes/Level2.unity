@@ -44749,6 +44749,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBubbleCountView
   bubbleCountText: {fileID: 8094736915282583430}
+  warningThreshold: 5
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  warningColor: {r: 1, g: 0.5529412, b: 0.5529412, a: 1}
+  blinkCycleDuration: 1.5
 --- !u!114 &700000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0

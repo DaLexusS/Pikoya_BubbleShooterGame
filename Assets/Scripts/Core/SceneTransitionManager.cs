@@ -109,6 +109,7 @@ public sealed class SceneTransitionManager : MonoBehaviour
         if (view != null)
         {
             yield return view.FadeToBlack();
+            yield return view.RenderOpaqueFrame();
         }
 
         AsyncOperation loading = beginLoading();
@@ -123,10 +124,9 @@ public sealed class SceneTransitionManager : MonoBehaviour
             yield return null;
         }
 
-        yield return null;
-
         if (view != null)
         {
+            yield return view.HoldOpaqueBeforeReveal();
             yield return view.FadeFromBlack();
         }
 

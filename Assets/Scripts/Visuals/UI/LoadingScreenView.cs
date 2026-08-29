@@ -10,6 +10,7 @@ public sealed class LoadingScreenView : MonoBehaviour
     [Header("Fade")]
     [SerializeField] private float fadeToBlackDuration = 0.35f;
     [SerializeField] private float fadeFromBlackDuration = 0.35f;
+    [SerializeField] private float opaqueHoldDuration = 0.12f;
     [SerializeField, Range(0f, 1f)] private float transparentAlpha = 0f;
     [SerializeField, Range(0f, 1f)] private float opaqueAlpha = 1f;
 
@@ -47,6 +48,28 @@ public sealed class LoadingScreenView : MonoBehaviour
         gameObject.SetActive(true);
         yield return FadeBlackTo(transparentAlpha, fadeFromBlackDuration);
         gameObject.SetActive(false);
+    }
+
+    public IEnumerator RenderOpaqueFrame()
+    {
+        gameObject.SetActive(true);
+        SetBlackAlpha(opaqueAlpha);
+        Canvas.ForceUpdateCanvases();
+        yield return new WaitForEndOfFrame();
+    }
+
+    public IEnumerator HoldOpaqueBeforeReveal()
+    {
+        gameObject.SetActive(true);
+        SetBlackAlpha(opaqueAlpha);
+        Canvas.ForceUpdateCanvases();
+
+        if (opaqueHoldDuration > 0f)
+        {
+            yield return new WaitForSecondsRealtime(opaqueHoldDuration);
+        }
+
+        yield return new WaitForEndOfFrame();
     }
 
     private IEnumerator FadeBlackTo(float targetAlpha, float duration)
