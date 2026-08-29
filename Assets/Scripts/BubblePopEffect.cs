@@ -49,15 +49,25 @@ public class BubblePopEffect : MonoBehaviour
             yield return null;
         }
 
+        int awardedScore = ScoreManager.Active == null
+            ? scoreValue
+            : ScoreManager.Active.AddBubble();
+
         PlayParticles();
-        PlayScoreEffect();
+        PlayScoreEffect(awardedScore);
         onPop.Invoke();
     }
 
-    private void PlayScoreEffect()
+    private void PlayScoreEffect(int awardedScore)
     {
+        if (ScoreWorldPool.Active != null)
+        {
+            ScoreWorldPool.Active.Play(transform.position, awardedScore);
+            return;
+        }
+
         ScoreWorldEffect scoreEffect = Instantiate(scoreEffectPrefab, transform.position, Quaternion.identity);
-        scoreEffect.Play(scoreValue);
+        scoreEffect.Play(awardedScore, effect => Destroy(effect.gameObject));
     }
 
     private void PlayParticles()

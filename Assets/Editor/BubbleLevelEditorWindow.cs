@@ -77,6 +77,8 @@ public class BubbleLevelEditorWindow : EditorWindow
         EditorGUILayout.Space(12f);
         DrawShotSequence();
         EditorGUILayout.Space(12f);
+        DrawScoreSettings();
+        EditorGUILayout.Space(12f);
         DrawValidation();
         EditorGUILayout.EndScrollView();
     }
@@ -361,6 +363,31 @@ public class BubbleLevelEditorWindow : EditorWindow
         SetEnumValue(shot, newColor, $"Paint Shot {shotIndex + 1}");
         lastPaintedItem = item;
         currentEvent.Use();
+    }
+
+    private void DrawScoreSettings()
+    {
+        EditorGUILayout.LabelField("Score And Stars", EditorStyles.boldLabel);
+
+        if (level == null)
+        {
+            EditorGUILayout.HelpBox("Choose a Level Asset to edit its score values.", MessageType.Info);
+            return;
+        }
+
+        SerializedObject levelObject = new SerializedObject(level);
+        levelObject.Update();
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(levelObject.FindProperty("maxScore"));
+        EditorGUILayout.PropertyField(levelObject.FindProperty("firstStarScore"));
+        EditorGUILayout.PropertyField(levelObject.FindProperty("secondStarScore"));
+        EditorGUILayout.PropertyField(levelObject.FindProperty("thirdStarScore"));
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            levelObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(level);
+        }
     }
 
     private void DrawValidation()

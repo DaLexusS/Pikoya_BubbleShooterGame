@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,9 +32,11 @@ public class PlayerShooter : MonoBehaviour
     private bool isReloadFinished;
     private bool isSwapping;
     private bool isInitialized;
+    private bool shootingEnabled = true;
 
     public int RemainingShots { get; private set; }
     public bool IsShotActive => isShotActive;
+    public event Action<int> RemainingShotsChanged;
 
     public void Initialize()
     {
@@ -47,11 +51,12 @@ public class PlayerShooter : MonoBehaviour
         aimPreview = Instantiate(aimPreviewPrefab);
         nextColorIndex = 2;
         isInitialized = true;
+        RemainingShotsChanged?.Invoke(RemainingShots);
     }
 
     private void Update()
     {
-        if (!isInitialized || isShotActive || isSwapping || currentBubble == null || Pointer.current == null)
+        if (!isInitialized || !shootingEnabled || isShotActive || isSwapping || currentBubble == null || Pointer.current == null)
         {
             return;
         }
@@ -146,6 +151,7 @@ public class PlayerShooter : MonoBehaviour
         BubbleView firedBubble = currentBubble;
         currentBubble = null;
         RemainingShots--;
+        RemainingShotsChanged?.Invoke(RemainingShots);
         isShotActive = true;
         firedBubble.transform.SetParent(null, true);
         isProjectileFinished = false;
@@ -229,6 +235,59 @@ public class PlayerShooter : MonoBehaviour
     private Vector3 GetBubbleScale(float scaleMultiplier)
     {
         return bubblePrefab.transform.localScale * (bubbleScale * scaleMultiplier);
+    }
+
+    public void DisableShooting()
+    {
+        shootingEnabled = false;
+        isAiming = false;
+
+        if (aimPreview != null)
+        {
+            aimPreview.Hide();
+        }
+    }
+
+    public List<BubbleView> ReleaseRemainingBubbles(Transform newParent)
+    {
+        DisableShooting();
+        List<BubbleView> bubbles = new List<BubbleView>();
+
+        if (currentBubble != null)
+        {
+            currentBubble.transform.SetParent(newParent, true);
+            bubbles.Add(currentBubble);
+            currentBubble = null;
+        }
+
+        if (nextBubble != null)
+        {
+            nextBubble.transform.SetParent(newParent, true);
+            bubbles.Add(nextBubble);
+            nextBubble = null;
+        }
+
+        while (bubbles.Count < RemainingShots && nextColorIndex < board.Level.ShotColorCount)
+        {
+            BubbleView bubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(nextColorIndex), 1f);
+            nextColorIndex++;
+
+            if (bubble == null)
+            {
+                continue;
+            }
+
+            bubble.transform.SetParent(newParent, true);
+            bubbles.Add(bubble);
+        }
+
+        return bubbles;
+    }
+
+    public void ConsumeCelebrationBubble()
+    {
+        RemainingShots = Mathf.Max(0, RemainingShots - 1);
+        RemainingShotsChanged?.Invoke(RemainingShots);
     }
 
     private void ShowAimPreview()

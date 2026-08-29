@@ -31,6 +31,19 @@ public sealed class BubbleView : MonoBehaviour
         bubbleVisual.SetPropertyBlock(propertyBlock);
     }
 
+    public void SetOpacity(float opacity)
+    {
+        Color bubbleColor = DisplayColor;
+        bubbleColor.a = Mathf.Clamp01(opacity);
+        propertyBlock ??= new MaterialPropertyBlock();
+        bubbleVisual.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetColor(TextureColor, bubbleColor);
+        bubbleVisual.SetPropertyBlock(propertyBlock);
+        Color strokeColor = strokeVisual.color;
+        strokeColor.a = bubbleColor.a;
+        strokeVisual.color = strokeColor;
+    }
+
     private Color GetDisplayColor(BubbleColor bubbleColor)
     {
         return bubbleColor switch

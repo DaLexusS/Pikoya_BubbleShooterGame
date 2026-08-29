@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,10 +29,13 @@ public sealed class MapLoader : MonoBehaviour
     private readonly Dictionary<Vector2Int, BubbleView> bubbles = new();
     private readonly Dictionary<Collider2D, Vector2Int> colliderCells = new();
     private bool isInitialized;
+    private int activeRemovalEffects;
 
     public LevelData Level => level;
     public float TopY => transform.position.y;
-    public bool IsEmpty => bubbles.Count == 0;
+    public int BubbleCount => bubbles.Count;
+    public bool IsEmpty => bubbles.Count == 0 && activeRemovalEffects == 0;
+    public event Action<int, bool> BubbleCountChanged;
 
     public void Initialize()
     {
@@ -68,6 +72,8 @@ public sealed class MapLoader : MonoBehaviour
                 }
             }
         }
+
+        NotifyBubbleCountChanged();
     }
 
     public bool TryGetCell(Collider2D bubbleCollider, out Vector2Int cell)
@@ -133,6 +139,7 @@ public sealed class MapLoader : MonoBehaviour
         bubble.name = $"Bubble {cell.y + 1}-{cell.x + 1}";
         RegisterBubble(cell, bubble);
         ResolveShot(cell, impactPosition);
+        NotifyBubbleCountChanged();
         return true;
     }
 
@@ -174,6 +181,12 @@ public sealed class MapLoader : MonoBehaviour
         }
 
         List<List<BubbleFall>> fallingGroups = CreateFallingGroups(result);
+        activeRemovalEffects += poppingBubbles.Count;
+
+        foreach (List<BubbleFall> fallingGroup in fallingGroups)
+        {
+            activeRemovalEffects += fallingGroup.Count;
+        }
 
         StartCoroutine(PlayPopSequence(poppingBubbles, fallingGroups));
     }
@@ -205,6 +218,8 @@ public sealed class MapLoader : MonoBehaviour
         }
 
         Destroy(bubble.gameObject);
+        activeRemovalEffects = Mathf.Max(0, activeRemovalEffects - 1);
+        NotifyBubbleCountChanged();
 
         foreach (BubbleFall fallingBubble in fallingBubbles)
         {
@@ -214,6 +229,8 @@ public sealed class MapLoader : MonoBehaviour
 
     private void HandleFallingBubbleCollected()
     {
+        activeRemovalEffects = Mathf.Max(0, activeRemovalEffects - 1);
+        NotifyBubbleCountChanged();
         onFallingBubbleCollected.Invoke();
     }
 
@@ -438,5 +455,10 @@ public sealed class MapLoader : MonoBehaviour
         float y = -row * verticalSpacing;
 
         return new Vector3(x, y, 0f);
+    }
+
+    private void NotifyBubbleCountChanged()
+    {
+        BubbleCountChanged?.Invoke(BubbleCount, IsEmpty);
     }
 }

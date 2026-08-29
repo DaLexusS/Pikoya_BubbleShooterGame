@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -12,17 +13,29 @@ public class ScoreWorldEffect : MonoBehaviour
     [SerializeField] private float floatDistance = 0.5f;
     [SerializeField] private float verticalOffset = 0.2f;
 
-    public void Play(int scoreValue)
+    private Vector3 originalScale;
+    private Color originalColor;
+    private Action<ScoreWorldEffect> finished;
+
+    private void Awake()
     {
+        originalScale = transform.localScale;
+        originalColor = scoreText.color;
+    }
+
+    public void Play(int scoreValue, Action<ScoreWorldEffect> onFinished)
+    {
+        StopAllCoroutines();
+        finished = onFinished;
         scoreText.text = scoreValue.ToString();
+        scoreText.color = originalColor;
+        transform.localScale = originalScale;
         transform.position += Vector3.up * verticalOffset;
         StartCoroutine(Animate());
     }
 
     private IEnumerator Animate()
     {
-        Vector3 originalScale = transform.localScale;
-        Color originalColor = scoreText.color;
         float duration = Mathf.Max(0.01f, scaleDuration);
         float elapsed = 0f;
 
@@ -54,6 +67,8 @@ public class ScoreWorldEffect : MonoBehaviour
             yield return null;
         }
 
-        Destroy(gameObject);
+        Action<ScoreWorldEffect> callback = finished;
+        finished = null;
+        callback?.Invoke(this);
     }
 }
