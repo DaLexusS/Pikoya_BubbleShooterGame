@@ -14,27 +14,42 @@ public class WinCelebrationView : MonoBehaviour
     [SerializeField] private float minimumEndOpacity = 0.2f;
     [SerializeField] private float maximumRotation = 240f;
 
-    public void Play(IReadOnlyList<BubbleView> bubbles, Action onBubbleStarted)
+    public void Play(IReadOnlyList<BubbleView> bubbles, Action onBubbleStarted, Action onFinished = null)
     {
-        StartCoroutine(PlaySequence(bubbles, onBubbleStarted));
+        StartCoroutine(PlaySequence(bubbles, onBubbleStarted, onFinished));
     }
 
-    private IEnumerator PlaySequence(IReadOnlyList<BubbleView> bubbles, Action onBubbleStarted)
+    private IEnumerator PlaySequence(IReadOnlyList<BubbleView> bubbles, Action onBubbleStarted, Action onFinished)
     {
+        int remaining = bubbles.Count;
+
+        if (remaining == 0)
+        {
+            onFinished?.Invoke();
+            yield break;
+        }
+
         foreach (BubbleView bubble in bubbles)
         {
             onBubbleStarted?.Invoke();
             fireworkPool.Play(GetRandomScreenPosition(0f));
-            StartCoroutine(AnimateBubble(bubble));
+            StartCoroutine(AnimateBubble(bubble, () => remaining--));
 
             if (bubbleLaunchInterval > 0f)
             {
                 yield return new WaitForSeconds(bubbleLaunchInterval);
             }
         }
+
+        while (remaining > 0)
+        {
+            yield return null;
+        }
+
+        onFinished?.Invoke();
     }
 
-    private IEnumerator AnimateBubble(BubbleView bubble)
+    private IEnumerator AnimateBubble(BubbleView bubble, Action onFinished)
     {
         Collider2D bubbleCollider = bubble.GetComponent<Collider2D>();
 
@@ -68,6 +83,7 @@ public class WinCelebrationView : MonoBehaviour
         }
 
         Destroy(bubble.gameObject);
+        onFinished?.Invoke();
     }
 
     private Vector3 GetRandomScreenPosition(float worldZ)

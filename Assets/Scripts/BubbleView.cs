@@ -18,6 +18,7 @@ public sealed class BubbleView : MonoBehaviour
     private MaterialPropertyBlock propertyBlock;
 
     public BubbleColor BubbleColor { get; private set; }
+    public bool WasPlayerShot { get; private set; }
     public Transform BubbleVisualTransform => bubbleVisual.transform;
     public Transform StrokeVisualTransform => strokeVisual.transform;
 
@@ -29,6 +30,11 @@ public sealed class BubbleView : MonoBehaviour
         bubbleVisual.GetPropertyBlock(propertyBlock);
         propertyBlock.SetColor(TextureColor, GetDisplayColor(bubbleColor));
         bubbleVisual.SetPropertyBlock(propertyBlock);
+    }
+
+    public void MarkAsPlayerShot()
+    {
+        WasPlayerShot = true;
     }
 
     public void SetOpacity(float opacity)

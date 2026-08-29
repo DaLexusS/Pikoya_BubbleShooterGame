@@ -9972,8 +9972,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleView
   bubbleVisual: {fileID: 7085563235346416959}
   strokeVisual: {fileID: 9104817454055755708}
-  redColor: {r: 0.823, g: 0.251015, b: 0.27073866, a: 1}
-  blueColor: {r: 0.2405661, g: 0.24056602, b: 1, a: 1}
+  redColor: {r: 1, g: 0.40135294, b: 0, a: 1}
+  blueColor: {r: 0.23921567, g: 0.86183023, b: 1, a: 1}
   greenColor: {r: 0.304695, g: 0.915, b: 0.30469504, a: 1}
   yellowColor: {r: 1, g: 0.8982885, b: 0.3066038, a: 1}
 --- !u!58 &8907452799999299475

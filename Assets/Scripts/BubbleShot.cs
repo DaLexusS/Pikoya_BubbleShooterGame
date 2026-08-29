@@ -24,6 +24,7 @@ public class BubbleShot : MonoBehaviour
         Action onShotFinished)
     {
         bubbleView = GetComponent<BubbleView>();
+        bubbleView.MarkAsPlayerShot();
         bubbleCollider = GetComponent<CircleCollider2D>();
         board = bubbleBoard;
         leftWall = leftWallCollider;

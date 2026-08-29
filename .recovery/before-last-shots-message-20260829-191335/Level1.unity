@@ -23662,7 +23662,6 @@ GameObject:
   - component: {fileID: 1488195074}
   - component: {fileID: 1488195076}
   - component: {fileID: 1488195075}
-  - component: {fileID: 700000000000000008}
   m_Layer: 5
   m_Name: LastShotsLeft
   m_TagString: Untagged
@@ -39681,7 +39680,6 @@ MonoBehaviour:
   boardBubbleCountView: {fileID: 700000000000000002}
   preGameView: {fileID: 700000000000000003}
   victoryView: {fileID: 700000000000000004}
-  lastShotsLeftView: {fileID: 700000000000000008}
   preGameDelay: 0.5
   loseLineY: -2.5
   onLost:
@@ -44874,24 +44872,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VisualZRotation
   degreesPerSecond: 12
   useUnscaledTime: 0
---- !u!114 &700000000000000008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1488195073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e6e82a7791343e3ad4fa9449a28b91f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SlideMessageView
-  slideInDuration: 0.2
-  visibleDuration: 2
-  slideOutDuration: 0.2
-  offscreenPadding: 80
-  elasticEntrance: 1
-  useUnscaledTime: 1
 --- !u!4 &978124179923466558
 Transform:
   m_ObjectHideFlags: 0

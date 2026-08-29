@@ -16,7 +16,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BoardBubbleCountView boardBubbleCountView;
     [SerializeField] private PreGameView preGameView;
     [SerializeField] private VictoryView victoryView;
-    [SerializeField] private SlideMessageView lastShotsLeftView;
     [SerializeField] private float preGameDelay = 0.5f;
 
     [SerializeField] private float loseLineY = -2.5f;
@@ -25,20 +24,9 @@ public class GameManager : MonoBehaviour
 
     private bool isInitialized;
     private bool isGameFinished;
-    private bool hasShownLastShotsMessage;
 
     private void Awake()
     {
-        StartCoroutine(InitializeWhenSceneIsReady());
-    }
-
-    private IEnumerator InitializeWhenSceneIsReady()
-    {
-        while (!SceneTransitionManager.IsSceneReady)
-        {
-            yield return null;
-        }
-
         InitializeGame();
     }
 
@@ -54,8 +42,6 @@ public class GameManager : MonoBehaviour
         mapLoader.Initialize();
         boardBubbleCountView ??= BoardBubbleCountView.FindInScene();
         boardBubbleCountView.Initialize(mapLoader);
-        lastShotsLeftView?.Initialize();
-        playerShooter.RemainingShotsChanged += HandleRemainingShotsChanged;
         playerShooter.Initialize();
         playerBubbleCountView ??= PlayerBubbleCountView.FindInScene();
         playerBubbleCountView.Initialize(playerShooter);
@@ -133,21 +119,10 @@ public class GameManager : MonoBehaviour
         victoryView?.Play(scoreManager.Score, earnedStarCount);
     }
 
-    private void HandleRemainingShotsChanged(int remainingShots)
-    {
-        if (hasShownLastShotsMessage || isGameFinished || remainingShots != 5)
-        {
-            return;
-        }
-
-        hasShownLastShotsMessage = true;
-        lastShotsLeftView?.Play();
-    }
-
     private static void ExitToMenu()
     {
         Time.timeScale = 1f;
-        SceneTransitionManager.LoadScene("Menu");
+        SceneManager.LoadScene("Menu");
     }
 
     private static void GoToNextLevel()
@@ -158,7 +133,7 @@ public class GameManager : MonoBehaviour
 
         if (nextIndex < SceneManager.sceneCountInBuildSettings)
         {
-            SceneTransitionManager.LoadScene(nextIndex);
+            SceneManager.LoadScene(nextIndex);
             return;
         }
 
@@ -174,7 +149,7 @@ public class GameManager : MonoBehaviour
             string nextName = scene.name.Substring(0, digitStart) + (number + 1);
             if (Application.CanStreamedLevelBeLoaded(nextName))
             {
-                SceneTransitionManager.LoadScene(nextName);
+                SceneManager.LoadScene(nextName);
                 return;
             }
         }
@@ -184,11 +159,6 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (playerShooter != null)
-        {
-            playerShooter.RemainingShotsChanged -= HandleRemainingShotsChanged;
-        }
-
         if (victoryView != null)
         {
             victoryView.ExitRequested -= ExitToMenu;

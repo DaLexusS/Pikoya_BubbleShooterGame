@@ -11,6 +11,7 @@ public class ScoreManager : MonoBehaviour
 
     public static ScoreManager Active { get; private set; }
     public int Score { get; private set; }
+    public ScoreBarView ScoreBarView => scoreBarView;
 
     public void Initialize(LevelData levelData)
     {

@@ -198,7 +198,7 @@ public class PlayerShooter : MonoBehaviour
 
         if (RemainingShots > 1)
         {
-            BubbleColor nextColor = board.Level.GetShotColor(nextColorIndex);
+            BubbleColor nextColor = GetAvailableQueueColor(board.Level.GetShotColor(nextColorIndex));
             nextColorIndex++;
             nextBubble = CreateBubble(nextBallPoint, nextColor, nextBubbleScale);
         }
@@ -213,6 +213,38 @@ public class PlayerShooter : MonoBehaviour
         {
             isShotActive = false;
         }
+    }
+
+    private BubbleColor GetAvailableQueueColor(BubbleColor plannedColor)
+    {
+        List<BubbleColor> availableColors = new List<BubbleColor>();
+
+        foreach (Vector2Int cell in board.GetOccupiedCells())
+        {
+            if (!board.TryGetBubble(cell, out BubbleView bubble) ||
+                bubble.WasPlayerShot ||
+                bubble.BubbleColor == BubbleColor.Empty)
+            {
+                continue;
+            }
+
+            if (bubble.BubbleColor == plannedColor)
+            {
+                return plannedColor;
+            }
+
+            if (!availableColors.Contains(bubble.BubbleColor))
+            {
+                availableColors.Add(bubble.BubbleColor);
+            }
+        }
+
+        if (availableColors.Count == 0)
+        {
+            return plannedColor;
+        }
+
+        return availableColors[UnityEngine.Random.Range(0, availableColors.Count)];
     }
 
     private BubbleView CreateBubble(Transform parentPoint, BubbleColor bubbleColor, float scaleMultiplier)

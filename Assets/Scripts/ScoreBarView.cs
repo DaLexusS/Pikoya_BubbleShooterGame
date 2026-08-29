@@ -22,6 +22,42 @@ public class ScoreBarView : MonoBehaviour
     private Canvas canvas;
     private RectTransform canvasRect;
 
+    public StarRewardEffect SpawnStarReward(RectTransform parent)
+    {
+        if (starRewardPrefab == null || parent == null)
+        {
+            return null;
+        }
+
+        StarRewardEffect reward = Instantiate(starRewardPrefab, parent);
+        reward.transform.SetAsLastSibling();
+        return reward;
+    }
+
+    public void PlayLandingParticles(RectTransform target, float scaleMultiplier = 1f)
+    {
+        if (starLandingParticlesPrefab == null || target == null)
+        {
+            return;
+        }
+
+        Canvas targetCanvas = target.GetComponentInParent<Canvas>();
+        RectTransform parent = targetCanvas != null ? targetCanvas.transform as RectTransform : null;
+
+        if (parent == null)
+        {
+            return;
+        }
+
+        ParticleSystem reward = Instantiate(starLandingParticlesPrefab, parent, false);
+        reward.transform.position = target.position;
+        reward.transform.localRotation = Quaternion.identity;
+        reward.transform.localScale = Vector3.one * particleUiScale * Mathf.Max(0f, scaleMultiplier);
+        reward.transform.SetAsLastSibling();
+        AddCanvasRenderers(reward);
+        StartCoroutine(PlayParticleReward(reward));
+    }
+
     public void Initialize(LevelData level)
     {
         canvas = GetComponentInParent<Canvas>();
@@ -92,8 +128,7 @@ public class ScoreBarView : MonoBehaviour
             return;
         }
 
-        StarRewardEffect reward = Instantiate(starRewardPrefab, canvasRect);
-        reward.transform.SetAsLastSibling();
+        StarRewardEffect reward = SpawnStarReward(canvasRect);
         reward.Play(sourcePosition, targetPosition, () => CompleteStarReward(index, targetPosition));
     }
 

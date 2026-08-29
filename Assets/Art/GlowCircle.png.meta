@@ -1,15 +1,10 @@
 fileFormatVersion: 2
-guid: 4093b3d49b6c93c46b6d62fa527ff124
-AssetOrigin:
-  serializedVersion: 1
-  productId: 375832
-  packageName: Hyper Casual UI Pack
-  packageVersion: 1.0
-  assetPath: Assets/Hyper_Casual_UI/Sprites/Icons/Untitled design - 2026-04-20T003058.439
-    1.png
-  uploadId: 906102
+guid: c7039ce9e6b6cce48aa7e6209144a534
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: -4044626355453536979
+    second: GlowCircle_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -45,8 +40,8 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
+    wrapU: 0
+    wrapV: 0
     wrapW: 0
   nPOTScale: 0
   lightmap: 0
@@ -129,13 +124,35 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: GlowCircle_0
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 13
+        width: 487
+        height: 487
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d25520252c99ed7c0800000000000000
+      internalID: -4044626355453536979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    internalID: 0
     vertices: []
     indices: 
     edges: []
@@ -143,7 +160,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      GlowCircle_0: -4044626355453536979
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
