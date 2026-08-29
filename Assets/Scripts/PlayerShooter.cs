@@ -248,6 +248,11 @@ public class PlayerShooter : MonoBehaviour
         }
     }
 
+    public void EnableShooting()
+    {
+        shootingEnabled = true;
+    }
+
     public List<BubbleView> ReleaseRemainingBubbles(Transform newParent)
     {
         DisableShooting();

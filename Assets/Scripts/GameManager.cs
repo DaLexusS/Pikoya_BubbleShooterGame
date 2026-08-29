@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WinCelebrationView winCelebration;
     [SerializeField] private PlayerBubbleCountView playerBubbleCountView;
     [SerializeField] private BoardBubbleCountView boardBubbleCountView;
+    [SerializeField] private PreGameView preGameView;
 
     [SerializeField] private float loseLineY = -2.5f;
     [SerializeField] private UnityEvent onLost = new UnityEvent();
@@ -41,6 +42,8 @@ public class GameManager : MonoBehaviour
         playerBubbleCountView ??= PlayerBubbleCountView.FindInScene();
         playerBubbleCountView.Initialize(playerShooter);
         scoreManager.Initialize(mapLoader.Level);
+        playerShooter.DisableShooting();
+        preGameView.Play(playerShooter.EnableShooting);
         isInitialized = true;
     }
 
