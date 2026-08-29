@@ -38,6 +38,10 @@ public sealed class VictoryView : MonoBehaviour
     [SerializeField] private float panelImpactInDuration = 0.06f;
     [SerializeField] private float panelImpactOutDuration = 0.1f;
 
+    [Header("Three Star Sound")]
+    [SerializeField] private float threeStarSoundVolume = 0.07f;
+    [SerializeField] private float threeStarSoundPitch = 1f;
+
     [Header("Idle Glow")]
     [SerializeField] private string glowProperty = "_GlowPower";
     [SerializeField] private float glowNormalPower = 1f;
@@ -117,6 +121,8 @@ public sealed class VictoryView : MonoBehaviour
 
         ResetStars();
         gameObject.SetActive(true);
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.UiAppear, 1.1f);
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.UiSwoosh, 1.1f);
         StartCoroutine(PlaySequence(Mathf.Clamp(earnedStarCount, 0, stars.Length)));
     }
 
@@ -213,6 +219,19 @@ public sealed class VictoryView : MonoBehaviour
             }
 
             starImages[index].color = earnedStarColor;
+        }
+
+        float rewardPitch = 1.5f + index * 0.2f;
+        float hitPitch = 1f + index * 0.1f;
+        AudioManager.Instance?.PlaySfx(0.1f, SFX.VictoryStarReward, rewardPitch);
+        AudioManager.Instance?.PlaySfx(0.3f, SFX.VictoryStarHit, hitPitch);
+
+        if (index == 2)
+        {
+            AudioManager.Instance?.PlaySfx(
+                threeStarSoundVolume,
+                SFX.ThreeStarWin,
+                threeStarSoundPitch);
         }
 
         scoreBarView?.PlayLandingParticles(target, landingParticleScale);

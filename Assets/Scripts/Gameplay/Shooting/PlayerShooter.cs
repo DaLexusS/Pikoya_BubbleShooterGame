@@ -156,6 +156,7 @@ public class PlayerShooter : MonoBehaviour
         firedBubble.transform.SetParent(null, true);
         isProjectileFinished = false;
         isReloadFinished = false;
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.BubbleShot, true, 1f, 1.2f);
         firedBubble.GetComponent<BubbleShot>().Launch(
             aimDirection,
             shotSpeed,

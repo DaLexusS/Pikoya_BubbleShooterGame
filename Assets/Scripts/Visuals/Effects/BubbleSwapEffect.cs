@@ -15,6 +15,7 @@ public class BubbleSwapEffect : MonoBehaviour
         Vector3 secondTargetScale,
         System.Action onFinished)
     {
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.BubbleSwap, true, 0.85f, 1f);
         StartCoroutine(Animate(
             firstBubble,
             firstTarget,

@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public sealed class SceneTransitionManager : MonoBehaviour
 {
     private const string LoadingScreenResourceName = "LoadingScreen";
+    private const string AudioManagerResourceName = "AudioManager";
 
     public static bool IsSceneReady { get; private set; }
     public static bool IsTransitioning => instance != null && instance.isTransitioning;
@@ -31,6 +32,8 @@ public sealed class SceneTransitionManager : MonoBehaviour
         DontDestroyOnLoad(managerObject);
         SceneTransitionManager manager = managerObject.AddComponent<SceneTransitionManager>();
 
+        BootstrapAudio();
+
         GameObject loadingPrefab = Resources.Load<GameObject>(LoadingScreenResourceName);
         if (loadingPrefab == null)
         {
@@ -42,6 +45,33 @@ public sealed class SceneTransitionManager : MonoBehaviour
         GameObject loadingObject = Instantiate(loadingPrefab);
         DontDestroyOnLoad(loadingObject);
         manager.Initialize(loadingObject.GetComponent<LoadingScreenView>());
+    }
+
+    private static void BootstrapAudio()
+    {
+        if (AudioManager.Instance != null)
+        {
+            return;
+        }
+
+        GameObject audioPrefab = Resources.Load<GameObject>(AudioManagerResourceName);
+        if (audioPrefab == null)
+        {
+            Debug.LogError("Resources/AudioManager prefab was not found.");
+            return;
+        }
+
+        GameObject audioObject = Instantiate(audioPrefab);
+        AudioManager audioManager = audioObject.GetComponent<AudioManager>();
+
+        if (audioManager == null)
+        {
+            Debug.LogError("Resources/AudioManager prefab has no AudioManager component.");
+            Destroy(audioObject);
+            return;
+        }
+
+        audioManager.Init();
     }
 
     private void Awake()

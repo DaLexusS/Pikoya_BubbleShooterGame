@@ -18,6 +18,8 @@ public class PreGameView : MonoBehaviour
         originalScale = transform.localScale;
         gameObject.SetActive(true);
         StopAllCoroutines();
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.UiAppear, 1.1f);
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.UiSwoosh, 1.1f);
         StartCoroutine(PlaySequence(onFinished));
     }
 
@@ -26,6 +28,7 @@ public class PreGameView : MonoBehaviour
         yield return ScaleTo(startScale, feedbackScale, appearDuration);
         yield return ScaleTo(feedbackScale, 1f, settleDuration);
         yield return new WaitForSecondsRealtime(visibleDuration);
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.UiSwoosh, 0.9f);
         yield return ScaleTo(1f, feedbackScale, settleDuration);
         yield return ScaleTo(feedbackScale, 0f, disappearDuration);
 

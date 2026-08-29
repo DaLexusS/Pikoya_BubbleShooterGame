@@ -73,11 +73,18 @@ public class BubbleShot : MonoBehaviour
 
             if (board.TryGetCell(hit.Collider, out Vector2Int contactCell))
             {
+                AudioManager.Instance?.PlaySfx(
+                    0.3f,
+                    SFX.BubbleHitBubble,
+                    true,
+                    1f,
+                    1.3f);
                 FinishShot(contactCell);
                 return;
             }
 
             ignoredWall = hit.Collider;
+            AudioManager.Instance?.PlaySfx(0.05f, SFX.BubbleHitWall, true, 0.9f, 1.1f);
             direction = Vector2.Reflect(direction, hit.Normal).normalized;
             transform.position += (Vector3)(direction * SurfaceOffset);
             distance = Mathf.Max(0f, distance - SurfaceOffset);

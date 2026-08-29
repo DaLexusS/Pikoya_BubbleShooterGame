@@ -13,6 +13,8 @@ public class WinCelebrationView : MonoBehaviour
     [SerializeField] private Vector2 verticalViewportRange = new Vector2(0.3f, 0.75f);
     [SerializeField] private float minimumEndOpacity = 0.2f;
     [SerializeField] private float maximumRotation = 240f;
+    [SerializeField] private float postVictoryFireworkDuration = 1f;
+    [SerializeField] private float postVictoryFireworkInterval = 0.15f;
 
     public void Play(IReadOnlyList<BubbleView> bubbles, Action onBubbleStarted, Action onFinished = null)
     {
@@ -23,30 +25,41 @@ public class WinCelebrationView : MonoBehaviour
     {
         int remaining = bubbles.Count;
 
-        if (remaining == 0)
+        if (remaining > 0)
         {
-            onFinished?.Invoke();
-            yield break;
-        }
+            AudioManager.Instance?.PlaySfx(0.1f, SFX.EndBubblesPop, 1f);
+            AudioManager.Instance?.PlaySfx(0.1f, SFX.Fireworks, 1f);
 
-        foreach (BubbleView bubble in bubbles)
-        {
-            onBubbleStarted?.Invoke();
-            fireworkPool.Play(GetRandomScreenPosition(0f));
-            StartCoroutine(AnimateBubble(bubble, () => remaining--));
-
-            if (bubbleLaunchInterval > 0f)
+            foreach (BubbleView bubble in bubbles)
             {
-                yield return new WaitForSeconds(bubbleLaunchInterval);
+                onBubbleStarted?.Invoke();
+                fireworkPool.Play(GetRandomScreenPosition(0f));
+                StartCoroutine(AnimateBubble(bubble, () => remaining--));
+
+                if (bubbleLaunchInterval > 0f)
+                {
+                    yield return new WaitForSeconds(bubbleLaunchInterval);
+                }
+            }
+
+            while (remaining > 0)
+            {
+                yield return null;
             }
         }
 
-        while (remaining > 0)
-        {
-            yield return null;
-        }
-
         onFinished?.Invoke();
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0f, postVictoryFireworkDuration);
+        float interval = Mathf.Max(0.01f, postVictoryFireworkInterval);
+
+        while (elapsed < duration)
+        {
+            fireworkPool.Play(GetRandomScreenPosition(0f));
+            yield return new WaitForSecondsRealtime(interval);
+            elapsed += interval;
+        }
     }
 
     private IEnumerator AnimateBubble(BubbleView bubble, Action onFinished)

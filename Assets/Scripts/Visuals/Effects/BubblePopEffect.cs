@@ -55,6 +55,7 @@ public class BubblePopEffect : MonoBehaviour
 
         PlayParticles();
         PlayScoreEffect(awardedScore);
+        AudioManager.Instance?.PlaySfx(0.1f, SFX.BubblePop, true, 1f, 1.3f);
         onPop.Invoke();
     }
 

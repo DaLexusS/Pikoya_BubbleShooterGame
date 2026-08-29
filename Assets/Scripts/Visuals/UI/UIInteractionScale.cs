@@ -22,6 +22,11 @@ public sealed class UIInteractionScale :
     [SerializeField] private float clickBounceDuration = 0.08f;
     [SerializeField] private bool useUnscaledTime = true;
 
+    [Header("Audio")]
+    [SerializeField] private float interactionSoundVolume = 0.1f;
+    [SerializeField] private float hoverSoundPitch = 1f;
+    [SerializeField] private Vector2 clickPitchRange = new Vector2(1f, 1.5f);
+
     private Vector3 originalScale;
     private Coroutine animation;
     private bool initialized;
@@ -46,7 +51,14 @@ public sealed class UIInteractionScale :
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        bool playHoverSound = !isHovered;
         isHovered = true;
+
+        if (playHoverSound)
+        {
+            PlayHoverSound();
+        }
+
         if (!isPressed)
         {
             AnimateTo(hoverScale);
@@ -76,12 +88,25 @@ public sealed class UIInteractionScale :
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        AudioManager.Instance?.PlaySfx(
+            interactionSoundVolume,
+            SFX.BubblePop,
+            true,
+            clickPitchRange.x,
+            clickPitchRange.y);
         StartAnimation(PlayClickBounce());
     }
 
     public void OnSelect(BaseEventData eventData)
     {
+        bool playHoverSound = !isHovered;
         isHovered = true;
+
+        if (playHoverSound)
+        {
+            PlayHoverSound();
+        }
+
         if (!isPressed)
         {
             AnimateTo(hoverScale);
@@ -98,6 +123,14 @@ public sealed class UIInteractionScale :
     private void AnimateTo(float multiplier)
     {
         StartAnimation(ScaleTo(originalScale * multiplier, transitionDuration));
+    }
+
+    private void PlayHoverSound()
+    {
+        AudioManager.Instance?.PlaySfx(
+            interactionSoundVolume,
+            SFX.UiHover,
+            hoverSoundPitch);
     }
 
     private void StartAnimation(IEnumerator sequence)

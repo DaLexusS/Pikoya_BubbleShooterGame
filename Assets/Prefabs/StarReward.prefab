@@ -89,8 +89,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarRewardEffect
   revealDuration: 0.1
-  revealHoldDuration: 0.08
+  revealHoldDuration: 0.5
+  holdCurveWidth: 28
+  holdCurveHeight: 18
+  holdScalePulse: 0.04
   flightDuration: 0.3
   arcHeight: 70
-  revealScale: 5
+  revealScale: 3.5
   rotationDegrees: 540

@@ -129,11 +129,13 @@ public class ScoreBarView : MonoBehaviour
         }
 
         StarRewardEffect reward = SpawnStarReward(canvasRect);
+        AudioManager.Instance?.PlaySfx(0.08f, SFX.StarAppear, true, 1f, 1.3f);
         reward.Play(sourcePosition, targetPosition, () => CompleteStarReward(index, targetPosition));
     }
 
     private void CompleteStarReward(int index, Vector2 targetPosition)
     {
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.StarSet, true, 1f, 1.3f);
         RevealStar(index);
 
         if (starLandingParticlesPrefab == null)

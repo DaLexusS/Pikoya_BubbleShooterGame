@@ -5,7 +5,10 @@ using UnityEngine;
 public class StarRewardEffect : MonoBehaviour
 {
     [SerializeField] private float revealDuration = 0.22f;
-    [SerializeField] private float revealHoldDuration = 0.08f;
+    [SerializeField] private float revealHoldDuration = 0.5f;
+    [SerializeField] private float holdCurveWidth = 28f;
+    [SerializeField] private float holdCurveHeight = 18f;
+    [SerializeField] private float holdScalePulse = 0.04f;
     [SerializeField] private float flightDuration = 0.55f;
     [SerializeField] private float arcHeight = 70f;
     [SerializeField] private float revealScale = 2f;
@@ -60,7 +63,24 @@ public class StarRewardEffect : MonoBehaviour
 
         if (revealHoldDuration > 0f)
         {
-            yield return new WaitForSeconds(revealHoldDuration);
+            float holdTime = revealHoldDuration;
+            elapsed = 0f;
+
+            while (elapsed < holdTime)
+            {
+                elapsed += Time.deltaTime;
+                float time = Mathf.Clamp01(elapsed / holdTime);
+                float horizontalCurve = Mathf.Sin(time * Mathf.PI * 2f) * holdCurveWidth;
+                float verticalCurve = Mathf.Sin(time * Mathf.PI) * holdCurveHeight;
+                float scalePulse = 1f + Mathf.Sin(time * Mathf.PI) * holdScalePulse;
+                rectTransform.anchoredPosition =
+                    startPosition + new Vector2(horizontalCurve, verticalCurve);
+                rectTransform.localScale = Vector3.one * (revealScale * scalePulse);
+                yield return null;
+            }
+
+            rectTransform.anchoredPosition = startPosition;
+            rectTransform.localScale = Vector3.one * revealScale;
         }
 
         float duration = Mathf.Max(0.01f, flightDuration);
