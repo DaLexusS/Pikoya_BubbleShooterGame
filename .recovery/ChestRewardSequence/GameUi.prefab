@@ -574,8 +574,6 @@ GameObject:
   - component: {fileID: 2935380570884332473}
   - component: {fileID: 5200202092264309899}
   - component: {fileID: 671160744435223204}
-  - component: {fileID: 630000000000000001}
-  - component: {fileID: 630000000000000002}
   m_Layer: 5
   m_Name: ChestPanel
   m_TagString: Untagged
@@ -643,62 +641,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &630000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796713902652643032}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b20c21071cb74794b78e40e619084930, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChestRewardView
-  sceneName: Level2
-  chestClose: {fileID: 129586666580576589}
-  chestOpen: {fileID: 8858764168076523865}
-  bomb: {fileID: 60074577226633597}
-  starParticlesPrefab: {fileID: 7183772249776497184, guid: a7813e073dd039d449c21c7afc22895e, type: 3}
-  starParticlesPosition: {x: 0, y: 0}
-  starParticlesScale: 400
-  rotationSoundVolume: 0.05
-  rotationSoundPitch: 1
-  openSoundVolume: 0.1
-  openSoundPitch: 1
-  openAccentVolume: 0.08
-  openAccentPitch: 1
-  chestStartScale: 0.15
-  chestAppearDuration: 0.25
-  holdBeforeRotation: 1
-  tiltAngle: 15
-  tiltRepeats: 2
-  tiltDuration: 0.23
-  rotationPauseDuration: 0.1
-  squashDuration: 0.08
-  squashY: 0.72
-  squashX: 1.08
-  recoverDuration: 0.14
-  bombStartScale: 0.2
-  bombOvershootScale: 1.12
-  bombAppearDuration: 0.18
-  bombSettleDuration: 0.1
-  bombHoldDuration: 1.5
-  bombDropDuration: 0.3
-  bombDropPadding: 100
-  fadeDuration: 0.18
---- !u!225 &630000000000000002
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796713902652643032}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &800036436051409441
 GameObject:
   m_ObjectHideFlags: 0

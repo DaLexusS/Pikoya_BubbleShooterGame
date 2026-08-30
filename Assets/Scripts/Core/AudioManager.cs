@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Serialization;
 
 public enum SFX
 {
@@ -23,6 +24,9 @@ public enum SFX
     Lose,
     ComboWord,
     BombExplosion,
+    ChestRotate,
+    ChestOpenOne,
+    ChestOpenTwo,
 }
 
 [RequireComponent(typeof(AudioPool))]
@@ -61,6 +65,10 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip sfxLose;
     [SerializeField] private AudioClip sfxComboWord;
     [SerializeField] private AudioClip sfxBombExplosion;
+    [SerializeField] private AudioClip sfxChestRotate;
+    [FormerlySerializedAs("sfxChestShine")]
+    [SerializeField] private AudioClip sfxChestOpenOne;
+    [SerializeField] private AudioClip sfxChestOpenTwo;
 
     private Coroutine musicFadeRoutine;
 
@@ -245,6 +253,15 @@ public class AudioManager : MonoBehaviour
             case SFX.BombExplosion:
                 PlaySfx(volume, sfxBombExplosion, hasRandomPitch, randomPitchMin, randomPitchMax);
                 break;
+            case SFX.ChestRotate:
+                PlaySfx(volume, sfxChestRotate, hasRandomPitch, randomPitchMin, randomPitchMax);
+                break;
+            case SFX.ChestOpenOne:
+                PlaySfx(volume, sfxChestOpenOne, hasRandomPitch, randomPitchMin, randomPitchMax);
+                break;
+            case SFX.ChestOpenTwo:
+                PlaySfx(volume, sfxChestOpenTwo, hasRandomPitch, randomPitchMin, randomPitchMax);
+                break;
         }
     }
 
@@ -254,6 +271,9 @@ public class AudioManager : MonoBehaviour
         {
             SFX.ComboWord => sfxComboWord != null,
             SFX.BombExplosion => sfxBombExplosion != null,
+            SFX.ChestRotate => sfxChestRotate != null,
+            SFX.ChestOpenOne => sfxChestOpenOne != null,
+            SFX.ChestOpenTwo => sfxChestOpenTwo != null,
             _ => true
         };
     }

@@ -54,6 +54,7 @@ public sealed class VictoryView : MonoBehaviour
 
     public event Action ExitRequested;
     public event Action NextRequested;
+    public event Action<int> StarsAwarded;
 
     private RectTransform panel;
     private RectTransform canvasRect;
@@ -171,6 +172,7 @@ public sealed class VictoryView : MonoBehaviour
             yield return new WaitForSecondsRealtime(Mathf.Max(0f, delayBetweenStars));
         }
 
+        StarsAwarded?.Invoke(earnedStarCount);
         StartCoroutine(PlayColorSequence(earnedStarCount));
     }
 

@@ -85,6 +85,9 @@ MonoBehaviour:
   sfxLose: {fileID: 8300000, guid: d2e9b9ce9bb131241908cc7285329bfe, type: 3}
   sfxComboWord: {fileID: 8300000, guid: a6ac30198be70444d9e525298af44ea9, type: 3}
   sfxBombExplosion: {fileID: 8300000, guid: c5946483344def84b80c6b942b8e8c31, type: 3}
+  sfxChestRotate: {fileID: 8300000, guid: 2a62ebc2b2895a54487765021f075044, type: 3}
+  sfxChestOpenOne: {fileID: 8300000, guid: 571eeb8d391443f49bc58118a78aebc7, type: 3}
+  sfxChestOpenTwo: {fileID: 8300000, guid: e6dd1a8e5ddd91946a39841e5239a2af, type: 3}
 --- !u!82 &8755837444483142110
 AudioSource:
   m_ObjectHideFlags: 0

@@ -21,7 +21,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private ComboFeedbackView comboFeedbackView;
     [SerializeField] private ComboFeedbackView comboFeedbackPrefab;
     [SerializeField] private SlideMessageView lastShotsLeftView;
-    [SerializeField] private ChestRewardView chestRewardView;
     [SerializeField] private float preGameDelay = 0.5f;
 
     [SerializeField] private float loseLineY = -2.5f;
@@ -77,15 +76,12 @@ public class GameManager : MonoBehaviour
         }
 
         comboFeedbackView?.Initialize();
-        chestRewardView ??= ChestRewardView.FindInScene();
-        chestRewardView?.Initialize();
         mapLoader.BubblesClearedByShot += HandleBubblesClearedByShot;
 
         if (victoryView != null)
         {
             victoryView.ExitRequested += ExitToMenu;
             victoryView.NextRequested += GoToNextLevel;
-            victoryView.StarsAwarded += HandleVictoryStarsAwarded;
         }
 
         if (loseView != null)
@@ -197,16 +193,6 @@ public class GameManager : MonoBehaviour
         comboFeedbackView?.Play(clearedBubbleCount, impactPosition);
     }
 
-    private void HandleVictoryStarsAwarded(int earnedStarCount)
-    {
-        if (earnedStarCount < 3 || chestRewardView == null || !chestRewardView.ShouldPlay)
-        {
-            return;
-        }
-
-        StartCoroutine(chestRewardView.Play());
-    }
-
     private static void ExitToMenu()
     {
         Time.timeScale = 1f;
@@ -274,7 +260,6 @@ public class GameManager : MonoBehaviour
         {
             victoryView.ExitRequested -= ExitToMenu;
             victoryView.NextRequested -= GoToNextLevel;
-            victoryView.StarsAwarded -= HandleVictoryStarsAwarded;
         }
     }
 
