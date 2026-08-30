@@ -30128,6 +30128,7 @@ MonoBehaviour:
   bubbleScale: 0.7
   maximumRows: 16
   minimumMatchSize: 3
+  bombRadius: 3
   fallCollectionY: -4.5
   onFallingBubbleCollected:
     m_PersistentCalls:
@@ -40319,6 +40320,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 635091885159553767, guid: f87bab646f032b2418bbcb515f5fd7ff, type: 3}
+      propertyPath: colorB.b
+      value: 5.3403134
+      objectReference: {fileID: 0}
+    - target: {fileID: 635091885159553767, guid: f87bab646f032b2418bbcb515f5fd7ff, type: 3}
+      propertyPath: colorB.g
+      value: 5.3403134
+      objectReference: {fileID: 0}
+    - target: {fileID: 635091885159553767, guid: f87bab646f032b2418bbcb515f5fd7ff, type: 3}
+      propertyPath: colorB.r
+      value: 5.3403134
+      objectReference: {fileID: 0}
     - target: {fileID: 1029865776221381456, guid: f87bab646f032b2418bbcb515f5fd7ff, type: 3}
       propertyPath: m_Name
       value: GameUi

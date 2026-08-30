@@ -42,15 +42,13 @@ public sealed class VictoryView : MonoBehaviour
     [SerializeField] private float threeStarSoundVolume = 0.07f;
     [SerializeField] private float threeStarSoundPitch = 1f;
 
-    [Header("Idle Color Cycle")]
-    [SerializeField] private string colorProperty = "_Color";
-    [ColorUsage(false, true)]
-    [SerializeField] private Color colorA = new Color(4f, 2.45f, 0f, 1f);
-    [ColorUsage(false, true)]
-    [SerializeField] private Color colorB = new Color(4f, 0.8f, 0f, 1f);
-    [SerializeField] private float colorPulseDuration = 0.5f;
-    [SerializeField] private float colorDelayBetweenStars = 0.2f;
-    [SerializeField] private float colorDelayAfterSequence = 1f;
+    [Header("Idle Glow")]
+    [SerializeField] private string glowProperty = "_GlowPower";
+    [SerializeField] private float glowNormalPower = 1f;
+    [SerializeField] private float glowPeakPower = 2f;
+    [SerializeField] private float glowPulseDuration = 0.5f;
+    [SerializeField] private float glowDelayBetweenStars = 0.2f;
+    [SerializeField] private float glowDelayAfterSequence = 1f;
 
     public event Action ExitRequested;
     public event Action NextRequested;
@@ -64,7 +62,7 @@ public sealed class VictoryView : MonoBehaviour
     private Quaternion[] starRotations;
     private Color[] lockedColors;
     private Vector3 panelScale;
-    private int colorPropertyId;
+    private int glowPowerId;
     private bool initialized;
 
     public void Initialize()
@@ -78,7 +76,7 @@ public sealed class VictoryView : MonoBehaviour
         Canvas canvas = GetComponentInParent<Canvas>();
         canvasRect = canvas != null ? canvas.transform as RectTransform : null;
         panelScale = panel.localScale;
-        colorPropertyId = Shader.PropertyToID(colorProperty);
+        glowPowerId = Shader.PropertyToID(glowProperty);
 
         int count = stars != null ? stars.Length : 0;
         starImages = new Image[count];
@@ -171,7 +169,7 @@ public sealed class VictoryView : MonoBehaviour
             yield return new WaitForSecondsRealtime(Mathf.Max(0f, delayBetweenStars));
         }
 
-        StartCoroutine(PlayColorSequence(earnedStarCount));
+        StartCoroutine(PlayGlowSequence(earnedStarCount));
     }
 
     private IEnumerator AwardStar(int index)
@@ -250,56 +248,56 @@ public sealed class VictoryView : MonoBehaviour
         }
 
         starMaterials[index] = new Material(source);
-        if (starMaterials[index].HasProperty(colorPropertyId))
+        if (starMaterials[index].HasProperty(glowPowerId))
         {
-            starMaterials[index].SetColor(colorPropertyId, colorA);
+            starMaterials[index].SetFloat(glowPowerId, glowNormalPower);
         }
 
     }
 
-    private IEnumerator PlayColorSequence(int earnedStarCount)
+    private IEnumerator PlayGlowSequence(int earnedStarCount)
     {
         while (gameObject.activeInHierarchy)
         {
             for (int index = 0; index < earnedStarCount; index++)
             {
                 Material material = starMaterials[index];
-                if (material == null || !material.HasProperty(colorPropertyId))
+                if (material == null || !material.HasProperty(glowPowerId))
                 {
                     continue;
                 }
 
-                yield return PulseColor(material);
+                yield return PulseGlow(material);
 
                 if (index < earnedStarCount - 1)
                 {
                     yield return new WaitForSecondsRealtime(
-                        Mathf.Max(0f, colorDelayBetweenStars));
+                        Mathf.Max(0f, glowDelayBetweenStars));
                 }
             }
 
             yield return new WaitForSecondsRealtime(
-                Mathf.Max(0f, colorDelayAfterSequence));
+                Mathf.Max(0f, glowDelayAfterSequence));
         }
     }
 
-    private IEnumerator PulseColor(Material material)
+    private IEnumerator PulseGlow(Material material)
     {
-        float duration = Mathf.Max(0.01f, colorPulseDuration);
+        float duration = Mathf.Max(0.01f, glowPulseDuration);
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(elapsed / duration);
-            Color color = progress < 0.5f
-                ? Color.Lerp(colorA, colorB, progress * 2f)
-                : Color.Lerp(colorB, colorA, (progress - 0.5f) * 2f);
-            material.SetColor(colorPropertyId, color);
+            float power = progress < 0.5f
+                ? Mathf.Lerp(glowNormalPower, glowPeakPower, progress * 2f)
+                : Mathf.Lerp(glowPeakPower, glowNormalPower, (progress - 0.5f) * 2f);
+            material.SetFloat(glowPowerId, power);
             yield return null;
         }
 
-        material.SetColor(colorPropertyId, colorA);
+        material.SetFloat(glowPowerId, glowNormalPower);
     }
 
     private IEnumerator PulseStar(int index)

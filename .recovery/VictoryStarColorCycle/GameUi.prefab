@@ -2029,12 +2029,12 @@ MonoBehaviour:
   panelImpactOutDuration: 0.1
   threeStarSoundVolume: 0.07
   threeStarSoundPitch: 1
-  colorProperty: _Color
-  colorA: {r: 4, g: 2.45, b: 0, a: 1}
-  colorB: {r: 4, g: 0.8, b: 0, a: 1}
-  colorPulseDuration: 0.5
-  colorDelayBetweenStars: 0.2
-  colorDelayAfterSequence: 1
+  glowProperty: _GlowPower
+  glowNormalPower: 1
+  glowPeakPower: 2
+  glowPulseDuration: 0.5
+  glowDelayBetweenStars: 0.2
+  glowDelayAfterSequence: 1
 --- !u!1 &3518609331051852708
 GameObject:
   m_ObjectHideFlags: 0
