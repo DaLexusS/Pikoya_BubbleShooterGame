@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private VictoryView victoryView;
     [SerializeField] private LoseView loseView;
     [SerializeField] private ExcellentView excellentView;
+    [SerializeField] private ComboFeedbackView comboFeedbackView;
+    [SerializeField] private ComboFeedbackView comboFeedbackPrefab;
     [SerializeField] private SlideMessageView lastShotsLeftView;
     [SerializeField] private float preGameDelay = 0.5f;
 
@@ -67,6 +69,14 @@ public class GameManager : MonoBehaviour
         loseView?.Initialize();
         excellentView ??= ExcellentView.FindInScene();
         excellentView?.Initialize();
+        comboFeedbackView ??= ComboFeedbackView.FindInScene();
+        if (comboFeedbackView == null && comboFeedbackPrefab != null)
+        {
+            comboFeedbackView = Instantiate(comboFeedbackPrefab);
+        }
+
+        comboFeedbackView?.Initialize();
+        mapLoader.BubblesClearedByShot += HandleBubblesClearedByShot;
 
         if (victoryView != null)
         {
@@ -178,6 +188,11 @@ public class GameManager : MonoBehaviour
         lastShotsLeftView?.Play();
     }
 
+    private void HandleBubblesClearedByShot(int clearedBubbleCount, Vector2 impactPosition)
+    {
+        comboFeedbackView?.Play(clearedBubbleCount, impactPosition);
+    }
+
     private static void ExitToMenu()
     {
         Time.timeScale = 1f;
@@ -228,6 +243,11 @@ public class GameManager : MonoBehaviour
         if (playerShooter != null)
         {
             playerShooter.RemainingShotsChanged -= HandleRemainingShotsChanged;
+        }
+
+        if (mapLoader != null)
+        {
+            mapLoader.BubblesClearedByShot -= HandleBubblesClearedByShot;
         }
 
         if (loseView != null)

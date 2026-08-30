@@ -46,7 +46,11 @@ public class PlayerShooter : MonoBehaviour
         }
 
         RemainingShots = board.Level.ShotColorCount;
-        currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0), 1f);
+        currentBubble = CreateBubble(
+            currentBallPoint,
+            board.Level.GetShotColor(0),
+            1f,
+            board.Level.FirstShotIsBomb);
         nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1), nextBubbleScale);
         aimPreview = Instantiate(aimPreviewPrefab);
         nextColorIndex = 2;
@@ -248,7 +252,11 @@ public class PlayerShooter : MonoBehaviour
         return availableColors[UnityEngine.Random.Range(0, availableColors.Count)];
     }
 
-    private BubbleView CreateBubble(Transform parentPoint, BubbleColor bubbleColor, float scaleMultiplier)
+    private BubbleView CreateBubble(
+        Transform parentPoint,
+        BubbleColor bubbleColor,
+        float scaleMultiplier,
+        bool isBomb = false)
     {
         if (bubbleColor == BubbleColor.Empty)
         {
@@ -261,6 +269,7 @@ public class PlayerShooter : MonoBehaviour
         bubble.transform.localRotation = Quaternion.identity;
         bubble.transform.localScale = GetBubbleScale(scaleMultiplier);
         bubble.SetColor(bubbleColor);
+        bubble.SetBomb(isBomb);
         return bubble;
     }
 

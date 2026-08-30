@@ -64,6 +64,7 @@ public class WinCelebrationView : MonoBehaviour
 
     private IEnumerator AnimateBubble(BubbleView bubble, Action onFinished)
     {
+        bubble.PrepareForCelebration();
         Collider2D bubbleCollider = bubble.GetComponent<Collider2D>();
 
         if (bubbleCollider != null)

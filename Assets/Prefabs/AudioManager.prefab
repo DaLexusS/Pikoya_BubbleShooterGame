@@ -64,6 +64,7 @@ MonoBehaviour:
   musicMixer: {fileID: 24300002, guid: 93b73609a0a6a394abe512532b3301fe, type: 2}
   gameMusic: {fileID: 8300000, guid: 7d9ac5c46975a1347bd1c7729112c656, type: 3}
   musicVolume: 0.008
+  musicFadeOutDuration: 0.5
   musicSource: {fileID: 8755837444483142110}
   sfxBubblePop: {fileID: 8300000, guid: 94b45664ab9d5a948b22ed9e2fe56ae5, type: 3}
   sfxBubbleShot: {fileID: 8300000, guid: ee3a003775b95f44aa2ef6aef2cea4e3, type: 3}
@@ -81,6 +82,9 @@ MonoBehaviour:
   sfxFireworks: {fileID: 8300000, guid: 9086abaa11efdcc49a779c0c55fcca94, type: 3}
   sfxUiHover: {fileID: 8300000, guid: 84d4d191380c83744a53b1c8a6f0aed7, type: 3}
   sfxExcellentAppear: {fileID: 8300000, guid: cc5f470da44ac6541b29ff62c9f6fd5a, type: 3}
+  sfxLose: {fileID: 8300000, guid: d2e9b9ce9bb131241908cc7285329bfe, type: 3}
+  sfxComboWord: {fileID: 8300000, guid: a6ac30198be70444d9e525298af44ea9, type: 3}
+  sfxBombExplosion: {fileID: 8300000, guid: c5946483344def84b80c6b942b8e8c31, type: 3}
 --- !u!82 &8755837444483142110
 AudioSource:
   m_ObjectHideFlags: 0

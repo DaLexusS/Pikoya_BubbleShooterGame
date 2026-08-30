@@ -30317,6 +30317,7 @@ MonoBehaviour:
   bubbleScale: 0.7
   maximumRows: 16
   minimumMatchSize: 3
+  bombRadius: 3
   fallCollectionY: -4.5
   onFallingBubbleCollected:
     m_PersistentCalls:
@@ -40147,7 +40148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7af92f4c9894b13a8dded7b653da1d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreWorldPool
-  scorePrefab: {fileID: 3338472200927354010, guid: 8f787ac871430344893901a33c59d519, type: 3}
+  scorePrefab: {fileID: 3338472200927354010, guid: fe02c63efb988fe4680435fb2326a682, type: 3}
   initialSize: 20
   maximumSize: 100
 --- !u!114 &2200000005

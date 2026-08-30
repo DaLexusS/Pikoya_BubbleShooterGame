@@ -21,6 +21,8 @@ public enum SFX
     UiHover,
     ExcellentAppear,
     Lose,
+    ComboWord,
+    BombExplosion,
 }
 
 [RequireComponent(typeof(AudioPool))]
@@ -57,6 +59,8 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip sfxUiHover;
     [SerializeField] private AudioClip sfxExcellentAppear;
     [SerializeField] private AudioClip sfxLose;
+    [SerializeField] private AudioClip sfxComboWord;
+    [SerializeField] private AudioClip sfxBombExplosion;
 
     private Coroutine musicFadeRoutine;
 
@@ -235,7 +239,23 @@ public class AudioManager : MonoBehaviour
             case SFX.Lose:
                 PlaySfx(volume, sfxLose, hasRandomPitch, randomPitchMin, randomPitchMax);
                 break;
+            case SFX.ComboWord:
+                PlaySfx(volume, sfxComboWord, hasRandomPitch, randomPitchMin, randomPitchMax);
+                break;
+            case SFX.BombExplosion:
+                PlaySfx(volume, sfxBombExplosion, hasRandomPitch, randomPitchMin, randomPitchMax);
+                break;
         }
+    }
+
+    public bool HasSfx(SFX sfx)
+    {
+        return sfx switch
+        {
+            SFX.ComboWord => sfxComboWord != null,
+            SFX.BombExplosion => sfxBombExplosion != null,
+            _ => true
+        };
     }
 
     public float GetRandomPitch(float min, float max)

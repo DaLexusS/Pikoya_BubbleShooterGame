@@ -1,0 +1,409 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerShooter : MonoBehaviour
+{
+    [SerializeField] private Camera gameplayCamera;
+    [SerializeField] private MapLoader board;
+    [SerializeField] private BubbleView bubblePrefab;
+    [SerializeField] private BubbleSwapEffect swapEffect;
+    [SerializeField] private BubbleAimPreview aimPreviewPrefab;
+    [SerializeField] private Transform currentBallPoint;
+    [SerializeField] private Transform nextBallPoint;
+    [SerializeField] private Collider2D leftWall;
+    [SerializeField] private Collider2D rightWall;
+    [SerializeField] private float shotSpeed = 12f;
+    [SerializeField] private float bubbleScale = 0.7f;
+    [SerializeField] private float nextBubbleScale = 0.85f;
+    [SerializeField] private float nextBallMoveDelay = 0.15f;
+    [SerializeField] private float swapClickRadius = 0.35f;
+
+    private BubbleView currentBubble;
+    private BubbleView nextBubble;
+    private BubbleAimPreview aimPreview;
+    private Vector2 aimDirection = Vector2.up;
+    private int nextColorIndex;
+    private bool isAiming;
+    private bool isShotActive;
+    private bool isProjectileFinished;
+    private bool isReloadFinished;
+    private bool isSwapping;
+    private bool isInitialized;
+    private bool shootingEnabled = true;
+
+    public int RemainingShots { get; private set; }
+    public bool IsShotActive => isShotActive;
+    public event Action<int> RemainingShotsChanged;
+
+    public void Initialize()
+    {
+        if (isInitialized)
+        {
+            return;
+        }
+
+        RemainingShots = board.Level.ShotColorCount;
+        currentBubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(0), 1f);
+        nextBubble = CreateBubble(nextBallPoint, board.Level.GetShotColor(1), nextBubbleScale);
+        aimPreview = Instantiate(aimPreviewPrefab);
+        nextColorIndex = 2;
+        isInitialized = true;
+        RemainingShotsChanged?.Invoke(RemainingShots);
+    }
+
+    private void Update()
+    {
+        if (!isInitialized || !shootingEnabled || isShotActive || isSwapping || currentBubble == null || Pointer.current == null)
+        {
+            return;
+        }
+
+        Vector2 pointerWorldPosition = GetPointerWorldPosition();
+
+        if (Pointer.current.press.wasPressedThisFrame)
+        {
+            if (IsSwapClick(pointerWorldPosition))
+            {
+                SwapBalls();
+                isAiming = false;
+                return;
+            }
+
+            isAiming = TrySetAimDirection(pointerWorldPosition);
+        }
+
+        if (isAiming && Pointer.current.press.isPressed)
+        {
+            TrySetAimDirection(pointerWorldPosition);
+        }
+
+        if (isAiming && Pointer.current.press.wasReleasedThisFrame)
+        {
+            TrySetAimDirection(pointerWorldPosition);
+            Shoot();
+            isAiming = false;
+        }
+    }
+
+    private Vector2 GetPointerWorldPosition()
+    {
+        Vector3 screenPosition = Pointer.current.position.ReadValue();
+        Vector3 worldPosition = gameplayCamera.ScreenToWorldPoint(screenPosition);
+        return worldPosition;
+    }
+
+    private bool TrySetAimDirection(Vector2 targetPosition)
+    {
+        Vector2 newDirection = targetPosition - (Vector2)currentBallPoint.position;
+
+        if (newDirection.y <= 0.05f)
+        {
+            aimPreview.Hide();
+            return false;
+        }
+
+        aimDirection = newDirection.normalized;
+        ShowAimPreview();
+        return true;
+    }
+
+    private bool IsSwapClick(Vector2 pointerPosition)
+    {
+        return nextBubble != null &&
+               Vector2.Distance(pointerPosition, currentBallPoint.position) <= swapClickRadius;
+    }
+
+    private void SwapBalls()
+    {
+        aimPreview.Hide();
+        BubbleView previousCurrent = currentBubble;
+        BubbleView previousNext = nextBubble;
+        (currentBubble, nextBubble) = (nextBubble, currentBubble);
+        isSwapping = true;
+        swapEffect.Play(
+            previousCurrent,
+            nextBallPoint,
+            GetBubbleScale(nextBubbleScale),
+            previousNext,
+            currentBallPoint,
+            GetBubbleScale(1f),
+            HandleSwapFinished);
+    }
+
+    private void HandleSwapFinished()
+    {
+        currentBubble.name = "Current Ball";
+        nextBubble.name = "Next Ball";
+        isSwapping = false;
+    }
+
+    private void Shoot()
+    {
+        if (RemainingShots <= 0)
+        {
+            return;
+        }
+
+        aimPreview.Hide();
+        BubbleView firedBubble = currentBubble;
+        currentBubble = null;
+        RemainingShots--;
+        RemainingShotsChanged?.Invoke(RemainingShots);
+        isShotActive = true;
+        firedBubble.transform.SetParent(null, true);
+        isProjectileFinished = false;
+        isReloadFinished = false;
+        AudioManager.Instance?.PlaySfx(0.05f, SFX.BubbleShot, true, 1f, 1.2f);
+        firedBubble.GetComponent<BubbleShot>().Launch(
+            aimDirection,
+            shotSpeed,
+            board,
+            leftWall,
+            rightWall,
+            HandleShotFinished);
+        StartCoroutine(PrepareNextShot());
+    }
+
+    private void HandleShotFinished()
+    {
+        isProjectileFinished = true;
+        TryFinishShot();
+    }
+
+    private IEnumerator PrepareNextShot()
+    {
+        yield return new WaitForSeconds(nextBallMoveDelay);
+
+        currentBubble = nextBubble;
+        nextBubble = null;
+
+        if (currentBubble != null)
+        {
+            bool movementFinished = false;
+            swapEffect.PlayPromotion(
+                currentBubble,
+                currentBallPoint,
+                GetBubbleScale(1f),
+                () => movementFinished = true);
+
+            while (!movementFinished)
+            {
+                yield return null;
+            }
+
+            currentBubble.name = "Current Ball";
+        }
+
+        if (RemainingShots > 1)
+        {
+            BubbleColor nextColor = GetAvailableQueueColor(board.Level.GetShotColor(nextColorIndex));
+            nextColorIndex++;
+            nextBubble = CreateBubble(nextBallPoint, nextColor, nextBubbleScale);
+        }
+
+        isReloadFinished = true;
+        TryFinishShot();
+    }
+
+    private void TryFinishShot()
+    {
+        if (isProjectileFinished && isReloadFinished)
+        {
+            isShotActive = false;
+        }
+    }
+
+    private BubbleColor GetAvailableQueueColor(BubbleColor plannedColor)
+    {
+        List<BubbleColor> availableColors = new List<BubbleColor>();
+
+        foreach (Vector2Int cell in board.GetOccupiedCells())
+        {
+            if (!board.TryGetBubble(cell, out BubbleView bubble) ||
+                bubble.WasPlayerShot ||
+                bubble.BubbleColor == BubbleColor.Empty)
+            {
+                continue;
+            }
+
+            if (bubble.BubbleColor == plannedColor)
+            {
+                return plannedColor;
+            }
+
+            if (!availableColors.Contains(bubble.BubbleColor))
+            {
+                availableColors.Add(bubble.BubbleColor);
+            }
+        }
+
+        if (availableColors.Count == 0)
+        {
+            return plannedColor;
+        }
+
+        return availableColors[UnityEngine.Random.Range(0, availableColors.Count)];
+    }
+
+    private BubbleView CreateBubble(Transform parentPoint, BubbleColor bubbleColor, float scaleMultiplier)
+    {
+        if (bubbleColor == BubbleColor.Empty)
+        {
+            return null;
+        }
+
+        BubbleView bubble = Instantiate(bubblePrefab, parentPoint);
+        bubble.name = parentPoint == currentBallPoint ? "Current Ball" : "Next Ball";
+        bubble.transform.localPosition = Vector3.zero;
+        bubble.transform.localRotation = Quaternion.identity;
+        bubble.transform.localScale = GetBubbleScale(scaleMultiplier);
+        bubble.SetColor(bubbleColor);
+        return bubble;
+    }
+
+
+    private Vector3 GetBubbleScale(float scaleMultiplier)
+    {
+        return bubblePrefab.transform.localScale * (bubbleScale * scaleMultiplier);
+    }
+
+    public void DisableShooting()
+    {
+        shootingEnabled = false;
+        isAiming = false;
+
+        if (aimPreview != null)
+        {
+            aimPreview.Hide();
+        }
+    }
+
+    public void EnableShooting()
+    {
+        shootingEnabled = true;
+    }
+
+    public List<BubbleView> ReleaseRemainingBubbles(Transform newParent)
+    {
+        DisableShooting();
+        List<BubbleView> bubbles = new List<BubbleView>();
+
+        if (currentBubble != null)
+        {
+            currentBubble.transform.SetParent(newParent, true);
+            bubbles.Add(currentBubble);
+            currentBubble = null;
+        }
+
+        if (nextBubble != null)
+        {
+            nextBubble.transform.SetParent(newParent, true);
+            bubbles.Add(nextBubble);
+            nextBubble = null;
+        }
+
+        while (bubbles.Count < RemainingShots && nextColorIndex < board.Level.ShotColorCount)
+        {
+            BubbleView bubble = CreateBubble(currentBallPoint, board.Level.GetShotColor(nextColorIndex), 1f);
+            nextColorIndex++;
+
+            if (bubble == null)
+            {
+                continue;
+            }
+
+            bubble.transform.SetParent(newParent, true);
+            bubbles.Add(bubble);
+        }
+
+        return bubbles;
+    }
+
+    public void ConsumeCelebrationBubble()
+    {
+        RemainingShots = Mathf.Max(0, RemainingShots - 1);
+        RemainingShotsChanged?.Invoke(RemainingShots);
+    }
+
+    private void ShowAimPreview()
+    {
+        Collider2D ignoredCollider = currentBubble.GetComponent<Collider2D>();
+        aimPreview.Show(
+            currentBallPoint.position,
+            aimDirection,
+            GetBubbleRadius(),
+            board,
+            leftWall,
+            rightWall,
+            ignoredCollider,
+            currentBubble.DisplayColor);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (currentBallPoint == null || board == null)
+        {
+            return;
+        }
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(currentBallPoint.position, swapClickRadius);
+
+        if (nextBallPoint != null)
+        {
+            Gizmos.DrawWireSphere(nextBallPoint.position, swapClickRadius * 0.75f);
+        }
+
+        DrawTrajectoryGizmo();
+    }
+
+    private void DrawTrajectoryGizmo()
+    {
+        Vector2 origin = currentBallPoint.position;
+        Vector2 direction = aimDirection.sqrMagnitude > 0f ? aimDirection.normalized : Vector2.up;
+        float radius = GetBubbleRadius();
+        Collider2D ignoredCollider = currentBubble == null ? null : currentBubble.GetComponent<Collider2D>();
+        Collider2D ignoredWall = null;
+
+        for (int bounce = 0; bounce <= 2; bounce++)
+        {
+            BubbleTrajectoryHit hit = BubbleTrajectory.Cast(
+                origin,
+                direction,
+                20f,
+                radius,
+                board,
+                leftWall,
+                rightWall,
+                ignoredCollider,
+                ignoredWall);
+
+            Vector2 endPoint = hit.HasHit ? hit.Point : origin + direction * 20f;
+            Gizmos.DrawLine(origin, endPoint);
+
+            if (!hit.HasHit || hit.IsTop || board.TryGetCell(hit.Collider, out _))
+            {
+                Gizmos.DrawWireSphere(endPoint, radius);
+                return;
+            }
+
+            ignoredWall = hit.Collider;
+            direction = Vector2.Reflect(direction, hit.Normal).normalized;
+            origin = endPoint + direction * 0.02f;
+        }
+    }
+
+    private float GetBubbleRadius()
+    {
+        if (currentBubble != null)
+        {
+            return currentBubble.GetComponent<CircleCollider2D>().bounds.extents.x;
+        }
+
+        CircleCollider2D prefabCollider = bubblePrefab == null ? null : bubblePrefab.GetComponent<CircleCollider2D>();
+        return prefabCollider == null ? 0.23f : prefabCollider.radius * bubblePrefab.transform.localScale.x * bubbleScale;
+    }
+}

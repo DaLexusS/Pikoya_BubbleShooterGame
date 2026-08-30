@@ -6,6 +6,7 @@ public sealed class LevelData : ScriptableObject
     [SerializeField] private int columns = 11;
     [SerializeField] private LevelRow[] rows = new LevelRow[8];
     [SerializeField] private BubbleColor[] shotColors = new BubbleColor[30];
+    [SerializeField] private bool firstShotIsBomb;
     [SerializeField] private int maxScore = 10000;
     [SerializeField] private int firstStarScore = 3000;
     [SerializeField] private int secondStarScore = 6500;
@@ -14,6 +15,7 @@ public sealed class LevelData : ScriptableObject
     public int Columns => columns;
     public int RowCount => rows.Length;
     public int ShotColorCount => shotColors.Length;
+    public bool FirstShotIsBomb => firstShotIsBomb;
     public int MaxScore => Mathf.Max(1, maxScore);
 
     public int StartingBubbleCount

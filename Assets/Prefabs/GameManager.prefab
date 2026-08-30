@@ -55,6 +55,7 @@ MonoBehaviour:
   boardBubbleCountView: {fileID: 0}
   preGameView: {fileID: 0}
   victoryView: {fileID: 0}
+  comboFeedbackPrefab: {fileID: 3338472200927354010, guid: 8f787ac871430344893901a33c59d519, type: 3}
   lastShotsLeftView: {fileID: 0}
   preGameDelay: 0.5
   loseLineY: -2.5

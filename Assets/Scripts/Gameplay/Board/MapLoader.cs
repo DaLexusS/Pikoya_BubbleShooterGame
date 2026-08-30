@@ -23,6 +23,7 @@ public sealed class MapLoader : MonoBehaviour
     [SerializeField] private float bubbleScale = 0.7f;
     [SerializeField] private int maximumRows = 16;
     [SerializeField] private int minimumMatchSize = 3;
+    [SerializeField, Min(0)] private int bombRadius = 3;
     [SerializeField] private float fallCollectionY = -4.5f;
     [SerializeField] private UnityEvent onFallingBubbleCollected = new UnityEvent();
 
@@ -36,6 +37,7 @@ public sealed class MapLoader : MonoBehaviour
     public int BubbleCount => bubbles.Count;
     public bool IsEmpty => bubbles.Count == 0 && activeRemovalEffects == 0;
     public event Action<int, bool> BubbleCountChanged;
+    public event Action<int, Vector2> BubblesClearedByShot;
 
     public void Initialize()
     {
@@ -162,6 +164,12 @@ public sealed class MapLoader : MonoBehaviour
 
     private void ResolveShot(Vector2Int shotCell, Vector2 impactPosition)
     {
+        if (TryGetBubble(shotCell, out BubbleView shotBubble) && shotBubble.IsBomb)
+        {
+            ResolveBomb(shotCell, impactPosition);
+            return;
+        }
+
         BubbleMatchResult result = BubbleMatchResolver.Resolve(this, shotCell, minimumMatchSize);
 
         if (result.MatchedCells.Count == 0)
@@ -170,6 +178,21 @@ public sealed class MapLoader : MonoBehaviour
             return;
         }
 
+        ResolveClearedBubbles(result, impactPosition);
+    }
+
+    private void ResolveBomb(Vector2Int bombCell, Vector2 impactPosition)
+    {
+        List<Vector2Int> explodedCells = FindCellsInRadius(bombCell, bombRadius);
+        HashSet<Vector2Int> removedCells = new HashSet<Vector2Int>(explodedCells);
+        List<Vector2Int> detachedCells = FindDetachedCells(removedCells);
+        BubbleMatchResult result = new BubbleMatchResult(explodedCells, detachedCells);
+        BombExplosionFeedback.PlayAt(impactPosition);
+        ResolveClearedBubbles(result, impactPosition);
+    }
+
+    private void ResolveClearedBubbles(BubbleMatchResult result, Vector2 impactPosition)
+    {
         List<BubbleView> poppingBubbles = new List<BubbleView>();
 
         foreach (Vector2Int cell in result.MatchedCells)
@@ -181,6 +204,13 @@ public sealed class MapLoader : MonoBehaviour
         }
 
         List<List<BubbleFall>> fallingGroups = CreateFallingGroups(result);
+        int clearedBubbleCount = poppingBubbles.Count;
+        foreach (List<BubbleFall> fallingGroup in fallingGroups)
+        {
+            clearedBubbleCount += fallingGroup.Count;
+        }
+
+        BubblesClearedByShot?.Invoke(clearedBubbleCount, impactPosition);
         activeRemovalEffects += poppingBubbles.Count;
 
         foreach (List<BubbleFall> fallingGroup in fallingGroups)
@@ -189,6 +219,84 @@ public sealed class MapLoader : MonoBehaviour
         }
 
         StartCoroutine(PlayPopSequence(poppingBubbles, fallingGroups));
+    }
+
+    private List<Vector2Int> FindCellsInRadius(Vector2Int originCell, int maximumRing)
+    {
+        List<Vector2Int> occupiedCells = new List<Vector2Int>();
+        Queue<Vector2Int> openCells = new Queue<Vector2Int>();
+        Dictionary<Vector2Int, int> rings = new Dictionary<Vector2Int, int>();
+        openCells.Enqueue(originCell);
+        rings[originCell] = 0;
+
+        while (openCells.Count > 0)
+        {
+            Vector2Int cell = openCells.Dequeue();
+            int ring = rings[cell];
+
+            if (TryGetBubble(cell, out _))
+            {
+                occupiedCells.Add(cell);
+            }
+
+            if (ring >= maximumRing)
+            {
+                continue;
+            }
+
+            foreach (Vector2Int neighbour in GetNeighbours(cell))
+            {
+                if (rings.TryAdd(neighbour, ring + 1))
+                {
+                    openCells.Enqueue(neighbour);
+                }
+            }
+        }
+
+        return occupiedCells;
+    }
+
+    private List<Vector2Int> FindDetachedCells(HashSet<Vector2Int> removedCells)
+    {
+        HashSet<Vector2Int> supportedCells = new HashSet<Vector2Int>();
+        Queue<Vector2Int> openCells = new Queue<Vector2Int>();
+
+        foreach (Vector2Int cell in GetOccupiedCells())
+        {
+            if (cell.y == 0 && !removedCells.Contains(cell))
+            {
+                supportedCells.Add(cell);
+                openCells.Enqueue(cell);
+            }
+        }
+
+        while (openCells.Count > 0)
+        {
+            Vector2Int cell = openCells.Dequeue();
+
+            foreach (Vector2Int neighbour in GetNeighbours(cell))
+            {
+                if (removedCells.Contains(neighbour) ||
+                    !TryGetBubble(neighbour, out _) ||
+                    !supportedCells.Add(neighbour))
+                {
+                    continue;
+                }
+
+                openCells.Enqueue(neighbour);
+            }
+        }
+
+        List<Vector2Int> detachedCells = new List<Vector2Int>();
+        foreach (Vector2Int cell in GetOccupiedCells())
+        {
+            if (!removedCells.Contains(cell) && !supportedCells.Contains(cell))
+            {
+                detachedCells.Add(cell);
+            }
+        }
+
+        return detachedCells;
     }
 
     private IEnumerator PlayPopSequence(List<BubbleView> poppingBubbles, List<List<BubbleFall>> fallingGroups)
