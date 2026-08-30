@@ -7,8 +7,6 @@ public class BoardBubbleCountView : MonoBehaviour
     [SerializeField] private GameObject checkmark;
 
     private MapLoader board;
-    private UIValueJumpFeedback jumpFeedback;
-    private bool hasDisplayedValue;
 
     public static BoardBubbleCountView FindInScene()
     {
@@ -36,9 +34,6 @@ public class BoardBubbleCountView : MonoBehaviour
             checkmark = checkmarkTransform == null ? null : checkmarkTransform.gameObject;
         }
 
-        jumpFeedback = bubbleCountText.GetComponent<UIValueJumpFeedback>();
-        jumpFeedback ??= bubbleCountText.gameObject.AddComponent<UIValueJumpFeedback>();
-
         if (board != null)
         {
             board.BubbleCountChanged -= SetBubbleCount;
@@ -56,15 +51,7 @@ public class BoardBubbleCountView : MonoBehaviour
 
         if (!isFinished)
         {
-            string newValue = bubbleCount.ToString();
-            bool valueChanged = hasDisplayedValue && bubbleCountText.text != newValue;
-            bubbleCountText.text = newValue;
-            hasDisplayedValue = true;
-
-            if (valueChanged)
-            {
-                jumpFeedback?.Play();
-            }
+            bubbleCountText.text = bubbleCount.ToString();
         }
     }
 

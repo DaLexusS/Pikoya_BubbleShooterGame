@@ -14,8 +14,6 @@ public class PlayerBubbleCountView : MonoBehaviour
 
     private PlayerShooter playerShooter;
     private Coroutine warningAnimation;
-    private UIValueJumpFeedback jumpFeedback;
-    private bool hasDisplayedValue;
 
     public static PlayerBubbleCountView FindInScene()
     {
@@ -37,9 +35,6 @@ public class PlayerBubbleCountView : MonoBehaviour
             bubbleCountText = GetComponentInChildren<TMP_Text>(true);
         }
 
-        jumpFeedback = bubbleCountText.GetComponent<UIValueJumpFeedback>();
-        jumpFeedback ??= bubbleCountText.gameObject.AddComponent<UIValueJumpFeedback>();
-
         if (playerShooter != null)
         {
             playerShooter.RemainingShotsChanged -= SetBubbleCount;
@@ -57,15 +52,7 @@ public class PlayerBubbleCountView : MonoBehaviour
             return;
         }
 
-        string newValue = bubbleCount.ToString();
-        bool valueChanged = hasDisplayedValue && bubbleCountText.text != newValue;
-        bubbleCountText.text = newValue;
-        hasDisplayedValue = true;
-
-        if (valueChanged)
-        {
-            jumpFeedback?.Play();
-        }
+        bubbleCountText.text = bubbleCount.ToString();
 
         if (bubbleCount == 0)
         {

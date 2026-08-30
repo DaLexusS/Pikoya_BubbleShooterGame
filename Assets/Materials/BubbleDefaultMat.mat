@@ -59,8 +59,8 @@ Material:
     - _FishEyeStrenght: {r: 30, g: 30, b: 0, a: 0}
     - _MarbleDirection: {r: 0, g: 0, b: 0, a: 0}
     - _MarbleTextureColor: {r: 1.2609352, g: 2.3245068, b: 2.1908643, a: 1}
-    - _TextureColor: {r: 1, g: 1, b: 1, a: 1}
-    - _TextureSize: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _TextureColor: {r: 1.4980394, g: 1.4980394, b: 1.4980394, a: 1}
+    - _TextureSize: {r: 1, g: 1, b: 0, a: 0}
     - _TextureTileSize: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

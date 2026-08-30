@@ -21,7 +21,6 @@ public class ScoreBarView : MonoBehaviour
     private readonly bool[] earnedStars = new bool[3];
     private Canvas canvas;
     private RectTransform canvasRect;
-    private UIValueJumpFeedback scoreJumpFeedback;
 
     public StarRewardEffect SpawnStarReward(RectTransform parent)
     {
@@ -68,7 +67,6 @@ public class ScoreBarView : MonoBehaviour
         scoreSlider.wholeNumbers = true;
         scoreSlider.SetValueWithoutNotify(0f);
         scoreText.text = 0.ToString("N0");
-        scoreJumpFeedback = GetOrAddJumpFeedback(scoreText);
 
         for (int index = 0; index < starScores.Length; index++)
         {
@@ -81,14 +79,8 @@ public class ScoreBarView : MonoBehaviour
 
     public void SetScore(int score)
     {
-        bool valueChanged = scoreText.text != score.ToString("N0");
         scoreSlider.SetValueWithoutNotify(score);
         scoreText.text = score.ToString("N0");
-
-        if (valueChanged)
-        {
-            scoreJumpFeedback?.Play();
-        }
 
         for (int index = 0; index < starScores.Length; index++)
         {
@@ -100,17 +92,6 @@ public class ScoreBarView : MonoBehaviour
             earnedStars[index] = true;
             PlayStarReward(index);
         }
-    }
-
-    private static UIValueJumpFeedback GetOrAddJumpFeedback(TMP_Text text)
-    {
-        if (text == null)
-        {
-            return null;
-        }
-
-        UIValueJumpFeedback feedback = text.GetComponent<UIValueJumpFeedback>();
-        return feedback != null ? feedback : text.gameObject.AddComponent<UIValueJumpFeedback>();
     }
 
     private void PositionStarMarker(RectTransform marker, float progress)
